@@ -38,32 +38,32 @@ At the moment there is support for:
 
 =item B<Procedures>
 
-Free format is supported though I<dcl-proc>.
+Free format is supported though C<dcl-proc>.
 
-Fixed format is supported though I<pxxxxxxxxxxxxxxxxxb>. Continues prodecure
-names is also supported, i.e. I<pxxxxxx...\nd                 b>. Up to 7
+Fixed format is supported though C<pxxxxxxxxxxxxxxxxxb>. Continues prodecure
+names is also supported, i.e. C<pxxxxxx...\nd                 b>. Up to 7
 leading spaces will be supported.
 
 =item B<Prodecure interface>
 
-Free format is supported though I<dcl-pi>.
+Free format is supported though C<dcl-pi>.
 
-Fixed format is supported though I<dxxxxxxxxxxxxxxxxxpi>. Continues declarations
+Fixed format is supported though C<dxxxxxxxxxxxxxxxxxpi>. Continues declarations
 is not supported. Up to 7 leading spaces will be supported.
 
 =item B<Data structures>
 
-Free format is supported though I<dcl-ds>.
+Free format is supported though C<dcl-ds>.
 
-Fixed format is supported though I<dxxxxxxxxxxxxxxxxxds>. Continues declarations
+Fixed format is supported though C<dxxxxxxxxxxxxxxxxxds>. Continues declarations
 is not supported. Up to 7 leading spaces will be supported.
 
 =item B<Stand alone and constant declarations>
 
-Free format is supported though I<dcl-s> and I<dcl-c>.
+Free format is supported though C<dcl-s> and C<dcl-c>.
 
-Fixed format is supported though I<dxxxxxxxxxxxxxxxxxs> and
-I<dxxxxxxxxxxxxxxxxxc>. Continues declarations is not supported. Up to 7
+Fixed format is supported though C<dxxxxxxxxxxxxxxxxxs> and
+C<dxxxxxxxxxxxxxxxxxc>. Continues declarations is not supported. Up to 7
 leading spaces will be supported.
 
 =back
@@ -171,7 +171,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.3';
+our $VERSION = '1.0.4';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
