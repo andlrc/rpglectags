@@ -1,0 +1,106 @@
+=pod
+
+=head1 NAME
+
+rpglectags - Creating ctags compatible files from RPGle files
+
+=head1 SYNOPSIS
+
+B<rpglectags>
+[B<-ffile>]
+[B<--help>]
+[B<--version>]
+[F<files>]...
+
+=head1 DESCRIPTION
+
+B<rpglectags> will create a ctags compatible file called 'tags'. This is work
+in process. At the moment there is support for:
+
+=over 4
+
+=item B<Procedures>
+
+Free format is supported though I<dcl-proc>.
+
+Fixed format is supported though I<pxxxxxxxxxxxxxxxxxb>. Continues prodecure
+names is also supported, i.e. I<pxxxxxx...\nd                 b>. Up to 7
+leading spaces will be supported.
+
+=item B<Prodecure interface>
+
+Free format is supported though I<dcl-pi>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxpi>. Continues declarations
+is not supported. Up to 7 leading spaces will be supported.
+
+=item B<Data structures>
+
+Free format is supported though I<dcl-ds>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxds>. Continues declarations
+is not supported. Up to 7 leading spaces will be supported.
+
+=item B<Stand alone and constant declarations>
+
+Free format is supported though I<dcl-s> and I<dcl-c>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxs> and
+I<dxxxxxxxxxxxxxxxxxc>. Continues declarations is not supported. Up to 7
+leading spaces will be supported.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<file>
+
+Write tags til specified file. Value of '-' writes tags to stdout.
+Default is 'tags'
+
+=item B<-a>
+
+Append the tags to an existing tag file
+
+=item B<-h>, B<--help>
+
+Print a summary of options and exit.
+
+=item B<--version>
+
+Print version information on standard output then exit successfully.
+
+=back
+
+=head1 EXAMPLES
+
+To create tags from the file 'test.rpgle', you'd use
+
+    rpglectags test.rpgle
+
+To create tags from all rpgle and sqlrpgle files recursively, you might say
+
+    find . -type f \( -name '*.rpgle' -o -name '*.sqlrpgle' \) \
+      -exec rpglectags {} +
+
+More examples:
+
+    rpglectags -o - test2.rpgle        # Print tags to stdout
+    rpglectags -a test2.rpgle          # Append tags to the 'tags' file
+
+=head1 SEE ALSO
+
+ctags(1)
+
+=head1 AUTHOR
+
+Andreas Louv <andreas@louv.dk>.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut

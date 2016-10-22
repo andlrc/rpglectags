@@ -1,0 +1,478 @@
+#!/usr/bin/env perl
+# Creating ctags compatible files for RPGle code.
+# See: http://ctags.sourceforge.net/FORMAT for documentation
+
+=pod
+
+=head1 NAME
+
+rpglectags - Creating ctags compatible files from RPGle files
+
+=head1 SYNOPSIS
+
+B<rpglectags>
+[B<-ffile>]
+[B<--help>]
+[B<--version>]
+[F<files>]...
+
+=head1 DESCRIPTION
+
+B<rpglectags> will create a ctags compatible file called 'tags'. This is work
+in process. At the moment there is support for:
+
+=over 4
+
+=item B<Procedures>
+
+Free format is supported though I<dcl-proc>.
+
+Fixed format is supported though I<pxxxxxxxxxxxxxxxxxb>. Continues prodecure
+names is also supported, i.e. I<pxxxxxx...\nd                 b>. Up to 7
+leading spaces will be supported.
+
+=item B<Prodecure interface>
+
+Free format is supported though I<dcl-pi>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxpi>. Continues declarations
+is not supported. Up to 7 leading spaces will be supported.
+
+=item B<Data structures>
+
+Free format is supported though I<dcl-ds>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxds>. Continues declarations
+is not supported. Up to 7 leading spaces will be supported.
+
+=item B<Stand alone and constant declarations>
+
+Free format is supported though I<dcl-s> and I<dcl-c>.
+
+Fixed format is supported though I<dxxxxxxxxxxxxxxxxxs> and
+I<dxxxxxxxxxxxxxxxxxc>. Continues declarations is not supported. Up to 7
+leading spaces will be supported.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<file>
+
+Write tags til specified file. Value of '-' writes tags to stdout.
+Default is 'tags'
+
+=item B<-a>
+
+Append the tags to an existing tag file
+
+=item B<-h>, B<--help>
+
+Print a summary of options and exit.
+
+=item B<--version>
+
+Print version information on standard output then exit successfully.
+
+=back
+
+=head1 EXAMPLES
+
+To create tags from the file 'test.rpgle', you'd use
+
+    rpglectags test.rpgle
+
+To create tags from all rpgle and sqlrpgle files recursively, you might say
+
+    find . -type f \( -name '*.rpgle' -o -name '*.sqlrpgle' \) \
+      -exec rpglectags {} +
+
+More examples:
+
+    rpglectags -o - test2.rpgle        # Print tags to stdout
+    rpglectags -a test2.rpgle          # Append tags to the 'tags' file
+
+=head1 SEE ALSO
+
+ctags(1)
+
+=head1 AUTHOR
+
+Andreas Louv <andreas@louv.dk>.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Pod::Usage;
+use Carp;
+
+our $APP     = 'rpglectags';
+our $VERSION = '1.0.0';
+
+my $currentProc      = undef;
+my $currentProcRegex = undef;
+
+my $output_file   = 'tags';
+my $append_output = 0;
+
+GetOptions(
+  "f=s" => \$output_file,
+  "a" => \$append_output,
+  "help" => sub { pod2usage(-verbose => 1); exit },
+  "version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }
+) or exit 1;
+
+main();
+
+sub main {
+  my @tags = get_tags();
+
+  push(@tags,
+    join("\t", '!_TAG_FILE_FORMAT', '2', '//'),
+    join("\t", '!_TAG_FILE_SORTED', '1', '//'),
+    join("\t", '!_TAG_PROGRAM_AUTHOR', 'Andreas Louv', '/andreas@louv.dk/'),
+    join("\t", '!_TAG_PROGRAM_NAME', 'rpglectags', '//'),
+    join("\t", '!_TAG_PROGRAM_URL', 'https://github.com/andlrc', '//'),
+    join("\t", '!_TAG_PROGRAM_VERSION', $VERSION, '//')
+  );
+
+  @tags = sort(@tags);
+
+  if ($output_file ne '-') {
+    open(my $tags_fh, '>' . ('>' x $append_output), $output_file)
+      or croak("Failed to open tags: $!");
+    print $tags_fh $_ . "\n" for @tags;
+    close($tags_fh);
+  }
+  else {
+    print $_ . "\n" for @tags;
+  }
+
+  return;
+}
+# Returns an array of tags seperated by <TAB>, i.e:
+# (
+#   "tagname<TAB>tagfile<TAB>tagaddress;"<TAB>field1:value<TAB>field2:value",
+#   "tagname<TAB>tagfile<TAB>tagaddress;"<TAB>field1:value<TAB>field2:value",
+#   ...
+# )
+sub get_tags {
+  my @tags = ();
+
+  while (my $line = <>) {
+    $line =~ y/\r//d; # Remove \r
+
+    if ($line =~ /end-proc/xi || $line =~ /^\s{0,7}p\s{17}e\b/xi) {
+      $currentProc = undef;
+      $currentProcRegex = undef;
+      next;
+    }
+
+    # Free 7.1 Procedure
+    if ($line =~ /\bdcl-proc\b/xi) {
+      my $export     = $line =~ /\s+export\s*;\s*$/xi;
+      my ($procName) = $line =~ /dcl-proc\s+(\w+)/xi;
+      my $regex      = '/^' . ($line =~ s/\s*(?:export)?;//xir) . '/';
+      $regex =~ y/\n//d;
+
+      my $tag = {
+        "tagname"    => $procName,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $regex,
+        "tagfields"  => {
+          "kind" => "f"
+        }
+      };
+
+      add_tag(\@tags, $tag);
+
+      $currentProc = $procName;
+      $currentProcRegex = $regex;
+
+      next;
+    }
+
+    # Fixed Procedure
+    if ($line =~ /^\s{0,7}p(?=[\w\s]{17}b|\s*\w+\.\.\.)\s*\w+/xi) {
+      my $regex = '/^' . ($line =~ s/\s*\bb\b.*//xir) . '/';
+      $regex    =~ y/\n//d;
+
+      # RPGle fixed can be multiply lines if the line is ending in ...
+      if ($line =~ s/\.\.\.\s*$//xi) {
+        $line .= <> =~ s/\s{0,7}p\b//xir;
+        $line =~ y/\r//d; # Remove \r
+      }
+
+      my $export     = $line =~ /\s+export\s*$/xi;
+      my ($procName) = $line =~ /\s{0,7}p\s+(\w+)/xi;
+
+      my $tag = {
+        "tagname"    => $procName,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $regex,
+        "tagfields"  => {
+          "kind" => "f"
+        }
+      };
+
+      add_tag(\@tags, $tag);
+
+      $currentProc = $procName;
+      $currentProcRegex = $regex;
+
+      next;
+    }
+
+    # Free 7.1 Pi
+    if ($line =~ /\bdcl-pi\b/xi) {
+      my $piRegex = '/^' . ($line =~ s/(dcl-pi\s+\w+).*/$1/xir) . '/';
+      $piRegex    =~ y/\n//d;
+
+      # Slurp all lines from dcl-ds ... end-ds
+      while ($line !~ /\bend-pi\b/xi) {
+        $line .= <>;
+        $line =~ y/\r//d; # Remove \r
+      }
+
+      parse_free_dspi(\@tags, $piRegex, $line, 'pi', { "kind" => "v" });
+
+      next;
+    }
+
+    # Fixed Pi
+    if ($line =~ /^\s{0,7}d[\w\s]{17}\bpi\b/xi) {
+
+      my $piRegex = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
+      $piRegex    =~ y/\n//d;
+
+      # Slurp all lines from d xxxxxx ... d xxxxxx
+      $line .= slurp_fixed_dspi();
+
+      parse_fixed_dspi(\@tags, $piRegex, $line, 'pi', { "kind" => "v" });
+
+      next;
+    }
+
+    # Free 7.1 DS
+    if ($line =~ /\bdcl-ds\b/xi) {
+      my ($dsName) = $line =~ /dcl-ds\s+(\w+)/xi;
+      my $dsRegex  = '/^' . ($line =~ s/(dcl-ds\s+\w+).*/$1/xir) . '/';
+      $dsRegex     =~ y/\n//d;
+
+      my $tagfields = {
+        "kind" => "s"
+      };
+
+      my $tag = {
+        "tagname"    => $dsName,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $dsRegex,
+        "tagfields"  => $tagfields
+      };
+
+      add_tag(\@tags, $tag);
+
+      # Don't try to find members if this DS is based on another DS
+      next if ($line =~ /\b(likeds)\b/xi);
+
+      # Slurp all lines from dcl-ds ... end-ds
+      while ($line !~ /\bend-ds\b/xi) {
+        $line .= <>;
+        $line =~ y/\r//d; # Remove \r
+      }
+
+      # Don't try to find members if this DS is based on an external database
+      # structure
+      next if ($line =~ /\b(extname)\b/xi);
+
+      parse_free_dspi(\@tags, $dsRegex, $line, 'ds', {
+        "kind"   => "m",
+        "struct" => $dsName
+      });
+
+      next;
+    }
+
+    # Fixed DS
+    if ($line =~ /^\s{0,7}d[\w\s]{17}\bds\b/xi) {
+
+      my ($dsName) = $line =~ /^\s{0,7}d\s*(\w+)/xi;
+      my $dsRegex  = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
+      $dsRegex     =~ y/\n//d;
+
+      my $tagfields = {
+        "kind" => "s"
+      };
+
+      my $tag = {
+        "tagname"    => $dsName,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $dsRegex,
+        "tagfields"  => $tagfields
+      };
+
+      add_tag(\@tags, $tag);
+
+      # Don't try to find members if this DS is based on another DS
+      next if ($line =~ /\b(likeds)\b/xi);
+
+      # Slurp all lines from d xxxxxx ... d xxxxxx
+      $line .= slurp_fixed_dspi();
+
+      # Don't try to find members if this DS is based on an external database
+      # structure
+      next if ($line =~ /\b(extname)\b/xi);
+
+      parse_fixed_dspi(\@tags, $dsRegex, $line, 'ds', {
+        "kind"   => "m",
+        "struct" => "$dsName"
+      });
+
+      next;
+    }
+
+    # Free 7.1 const and standalone
+    if ($line =~ /\bdcl-[sc]\b/xi) {
+      my ($name) = $line =~ /dcl-[sc]\s+(\w+)/xi;
+      my $regex  = '/^' . ($line =~ s/(dcl-[sc]\s+\w+).*/$1/xir) . '/';
+      $regex     =~ y/\n//d;
+
+      my $tagfields = {
+        "kind" => "v"
+      };
+
+      my $tag = {
+        "tagname"    => $name,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $regex,
+        "tagfields"  => $tagfields
+      };
+
+      add_tag(\@tags, $tag);
+      next;
+    }
+
+    # Fixed const and standalone
+    if ($line =~ /^\s{0,7}d[\w\s]{17}\b[sc]\b/xi) {
+      my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
+      my $regex   = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
+      $regex      =~ y/\n//d;
+
+      my $tagfields = {
+        "kind" => "v"
+      };
+
+      my $tag = {
+        "tagname"    => $name,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $regex,
+        "tagfields"  => $tagfields
+      };
+
+      add_tag(\@tags, $tag);
+      next;
+    }
+  }
+  return @tags;
+}
+# Adds a tag to the @tags array, the entry is saved as a tab seperated list, see
+# &get_tags for explanation.
+sub add_tag {
+  my ($tags, $tag) = @_;
+  my $tagname      = $tag->{tagname};
+  my $tagfile      = $tag->{tagfile};
+  my $tagaddress   = $tag->{tagaddress};
+  my $tagfields    = $tag->{tagfields};
+
+  $tagaddress = "$currentProcRegex;$tagaddress" if $currentProcRegex;
+
+  my @tag = (
+    $tagname,
+    $tagfile,
+    $tagaddress . ';"'
+  );
+
+  for my $key (keys %{ $tagfields }) {
+    push(@tag, $key . ':' . $tagfields->{$key});
+  }
+
+  push(@tag, "file:");
+
+  push(@{$tags}, join("\t", @tag));
+  return;
+}
+# Reads multiply lines from the input file. Stops when a line not matching
+# (Simplified):
+# d hello\s*$
+# \s*d hello\s*$
+sub slurp_fixed_dspi {
+  my $line = '';
+  while (1) {
+    my $pos       = tell(ARGV);
+    my $next_line = <>;
+
+    if ($next_line !~ /^\s{0,7}d(?=[\w\s]{17}\W)\s*\w+/xi) {
+      seek(ARGV, $pos, 0);
+      last;
+    }
+
+    $line .= $next_line;
+  }
+
+  $line =~ y/\r//d; # Remove \r
+
+  return $line;
+}
+# Create tag entries in the @tags array from slurped lines.
+sub parse_free_dspi {
+  my ($tags, $parentRegex, $line, $type, $tagfields) = @_;
+
+  foreach (split("\n", $line)) {
+    next if /\bdcl-$type\b|\bend-$type\b/xi;
+
+    my ($memberName) = $_ =~ /\s*(\w+)/xi;
+    my $memberRegex  = '/^' . ($_ =~ s/(\s*\w+).*/$1/xir) . '/';
+
+    my $tag = {
+      "tagname"    => $memberName,
+      "tagfile"    => $ARGV,
+      "tagaddress" => "$parentRegex;$memberRegex",
+      "tagfields"  => $tagfields
+    };
+
+    add_tag($tags, $tag);
+  }
+
+  return;
+}
+# Create tag entries in the @tags array from slurped lines from slurp_fixed_dspi
+sub parse_fixed_dspi {
+  my ($tags, $parentRegex, $line, $type, $tagfields) = @_;
+
+  foreach (split("\n", $line)) {
+    next if /^\s{0,7}d[\w\s]{17}$type/xi;
+
+    my ($memberName) = $_ =~ /\s{0,7}d\s*(\w+)/xi;
+    my $memberRegex  = '/^' . ($_ =~ s/(\s{0,7}d\s*\w+).*/$1/xir) . '/';
+
+    my $tag = {
+      "tagname"    => $memberName,
+      "tagfile"    => $ARGV,
+      "tagaddress" => "$parentRegex;$memberRegex",
+      "tagfields"  => $tagfields
+    };
+
+    add_tag($tags, $tag);
+  }
+
+  return;
+}
