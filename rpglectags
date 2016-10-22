@@ -19,7 +19,20 @@ B<rpglectags>
 =head1 DESCRIPTION
 
 B<rpglectags> will create a ctags compatible file called 'tags'. This is work
-in process. At the moment there is support for:
+in process.
+
+The B<rpglectags> program generate an index (or "tag") file for rpgle objects
+found in file(s). This tag file allows these items to be quickly and easily
+located by a text editor or other utility. A "tag" signifies a language object
+for which an index entry is available.
+
+Tag index files are supported by a numerous editors, which allows the user to
+locate the objects associated with a name appearing in a source file and jump to
+the file and line which defines the name. Among other are:
+
+    Vi(1), Vim(1), Sublime Text, Visual Studio Code, Notepad++, ...
+
+At the moment there is support for:
 
 =over 4
 
@@ -94,6 +107,48 @@ More examples:
     rpglectags -o - test2.rpgle        # Print tags to stdout
     rpglectags -a test2.rpgle          # Append tags to the 'tags' file
 
+=head1 TAG FILE FORMAT
+
+Each entry in the tag file consists of a separate line, each looking like this
+in the most general case:
+
+    {tagname}<TAB>{tagfile}<TAB>{tagaddress};"<TAB>{tagfields}
+
+The fields and seperators of these lines are specified as follows:
+
+=over 4
+
+=item B<1.>
+
+Tag name
+
+=item B<2.>
+
+Single tab character
+
+=item B<3.>
+
+Name of the file in which the object associated with the tag is located
+
+=item B<4.>
+
+Single tab character
+
+=item B<5.>
+
+Tag address. A non B<magic> pattern enclosed in B</> or B<?> or a line number.
+
+=item B<6.>
+
+A constant ";"" for backward compatibility with vi(1)
+
+=item B<7.>
+
+Extra fields narrowing down the type of tag entry, i.e. kind:{fvms},
+struct:nameOfStruct
+
+=back
+
 =head1 SEE ALSO
 
 ctags(1)
@@ -116,7 +171,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.1';
+our $VERSION = '1.0.2';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
