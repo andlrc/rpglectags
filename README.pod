@@ -7,7 +7,7 @@ rpglectags - Creating ctags compatible files from RPGle files
 =head1 SYNOPSIS
 
 B<rpglectags>
-[B<-ffile>]
+[B<-f output>]
 [B<--help>]
 [B<--version>]
 [F<files>]...
