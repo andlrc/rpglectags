@@ -16,3 +16,7 @@ install-man:
 
 clean-man:
 	rm $(mandir)/rpglectags.1
+
+pod:
+	pod2text rpglectags > README
+	pod2man rpglectags > rpglectags.1
