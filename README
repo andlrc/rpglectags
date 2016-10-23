@@ -4,6 +4,9 @@ NAME
 SYNOPSIS
     rpglectags [-f output] [-a] [--help] [--version] [files]...
 
+INSTALL
+        sudo make install
+
 DESCRIPTION
     rpglectags will create a ctags compatible file called 'tags'. This is
     work in process.
