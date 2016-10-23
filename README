@@ -38,8 +38,9 @@ DESCRIPTION
         Free format is supported though `dcl-proc'.
 
         Fixed format is supported though `pxxxxxxxxxxxxxxxxxb'. Continues
-        procedure names is also supported, i.e. `pxxxxxx...\nd b'. Up to 7
-        leading spaces will be supported.
+        procedure names is also supported, i.e.
+        `pxxxxxx...\nd_________________b'. Where `_' is a literal space. Up
+        to 7 leading spaces will be supported.
 
     Prodecure interface
         Free format is supported though `dcl-pi'.

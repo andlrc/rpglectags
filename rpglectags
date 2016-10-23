@@ -52,8 +52,8 @@ At the moment there is support for:
 Free format is supported though C<dcl-proc>.
 
 Fixed format is supported though C<pxxxxxxxxxxxxxxxxxb>. Continues procedure
-names is also supported, i.e. C<pxxxxxx...\nd                 b>. Up to 7
-leading spaces will be supported.
+names is also supported, i.e. C<pxxxxxx...\nd_________________b>. Where C<_> is
+a literal space. Up to 7 leading spaces will be supported.
 
 =item B<Prodecure interface>
 
@@ -182,7 +182,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.13';
+our $VERSION = '1.0.14';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
