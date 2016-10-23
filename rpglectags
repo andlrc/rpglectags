@@ -29,7 +29,7 @@ One can uninstall by running:
 
 =head1 DESCRIPTION
 
-B<rpglectags> will create a ctags compatible file called 'tags'. This is work
+B<rpglectags> will create a ctags compatible file called `tags'. This is work
 in process.
 
 The B<rpglectags> program generate an index (or "tag") file for RPG/ILE objects
@@ -85,8 +85,8 @@ leading spaces will be supported.
 
 =item B<-f> I<file>
 
-Write tags til specified file. Value of '-' writes tags to stdout.
-Default is 'tags'
+Write tags til specified file. Value of `-' writes tags to stdout.
+Default is `tags'
 
 =item B<-a>
 
@@ -104,7 +104,7 @@ Print version information on standard output then exit successfully.
 
 =head1 EXAMPLES
 
-To create tags from the file 'test.rpgle', you'd use
+To create tags from the file `test.rpgle', you'd use
 
     rpglectags test.rpgle
 
@@ -182,7 +182,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.12';
+our $VERSION = '1.0.13';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;

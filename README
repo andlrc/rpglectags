@@ -9,15 +9,15 @@ INSTALL
 
         sudo make install
 
-    This will install two files: "/usr/bin/rpglectags" and
-    "/usr/share/man/man1/rpglectags.1".
+    This will install two files: `/usr/bin/rpglectags' and
+    `/usr/share/man/man1/rpglectags.1'.
 
     One can uninstall by running:
 
         sudo make clean
 
 DESCRIPTION
-    rpglectags will create a ctags compatible file called 'tags'. This is
+    rpglectags will create a ctags compatible file called `tags'. This is
     work in process.
 
     The rpglectags program generate an index (or "tag") file for RPG/ILE
@@ -35,37 +35,37 @@ DESCRIPTION
     At the moment there is support for:
 
     Procedures
-        Free format is supported though "dcl-proc".
+        Free format is supported though `dcl-proc'.
 
-        Fixed format is supported though "pxxxxxxxxxxxxxxxxxb". Continues
-        procedure names is also supported, i.e. "pxxxxxx...\nd b". Up to 7
+        Fixed format is supported though `pxxxxxxxxxxxxxxxxxb'. Continues
+        procedure names is also supported, i.e. `pxxxxxx...\nd b'. Up to 7
         leading spaces will be supported.
 
     Prodecure interface
-        Free format is supported though "dcl-pi".
+        Free format is supported though `dcl-pi'.
 
-        Fixed format is supported though "dxxxxxxxxxxxxxxxxxpi". Continues
+        Fixed format is supported though `dxxxxxxxxxxxxxxxxxpi'. Continues
         declarations is not supported. Up to 7 leading spaces will be
         supported.
 
     Data structures
-        Free format is supported though "dcl-ds".
+        Free format is supported though `dcl-ds'.
 
-        Fixed format is supported though "dxxxxxxxxxxxxxxxxxds". Continues
+        Fixed format is supported though `dxxxxxxxxxxxxxxxxxds'. Continues
         declarations is not supported. Up to 7 leading spaces will be
         supported.
 
     Stand alone and constant declarations
-        Free format is supported though "dcl-s" and "dcl-c".
+        Free format is supported though `dcl-s' and `dcl-c'.
 
-        Fixed format is supported though "dxxxxxxxxxxxxxxxxxs" and
-        "dxxxxxxxxxxxxxxxxxc". Continues declarations is not supported. Up
+        Fixed format is supported though `dxxxxxxxxxxxxxxxxxs' and
+        `dxxxxxxxxxxxxxxxxxc'. Continues declarations is not supported. Up
         to 7 leading spaces will be supported.
 
 OPTIONS
     -f *file*
-        Write tags til specified file. Value of '-' writes tags to stdout.
-        Default is 'tags'
+        Write tags til specified file. Value of `-' writes tags to stdout.
+        Default is `tags'
 
     -a  Append the tags to an existing tag file
 
@@ -76,7 +76,7 @@ OPTIONS
         Print version information on standard output then exit successfully.
 
 EXAMPLES
-    To create tags from the file 'test.rpgle', you'd use
+    To create tags from the file `test.rpgle', you'd use
 
         rpglectags test.rpgle
 

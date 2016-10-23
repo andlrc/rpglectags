@@ -30,8 +30,8 @@
 .    if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\"  diablo 12 pitch
 .    ds L" ""
 .    ds R" ""
-.    ds C` ""
-.    ds C' ""
+.    ds C` `
+.    ds C' '
 'br\}
 .el\{\
 .    ds -- \|\(em\|
@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "rpglectags 1"
-.TH rpglectags 1 "2016-10-23" "perl v5.24.0" "RPG/ILE Ctags"
+.TH rpglectags 1 "2016-10-23" "" "RPG/ILE Ctags"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -146,7 +146,7 @@ rpglectags \- Creating ctags compatible files from RPG/ILE files
 [\fIfiles\fR]...
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-\&\fBrpglectags\fR will create a ctags compatible file called 'tags'. This is work
+\&\fBrpglectags\fR will create a ctags compatible file called `tags'. This is work
 in process.
 .PP
 The \fBrpglectags\fR program generate an index (or \*(L"tag\*(R") file for \s-1RPG/ILE\s0 objects
@@ -193,8 +193,8 @@ leading spaces will be supported.
 .IX Header "OPTIONS"
 .IP "\fB\-f\fR \fIfile\fR" 4
 .IX Item "-f file"
-Write tags til specified file. Value of '\-' writes tags to stdout.
-Default is 'tags'
+Write tags til specified file. Value of `\-' writes tags to stdout.
+Default is `tags'
 .IP "\fB\-a\fR" 4
 .IX Item "-a"
 Append the tags to an existing tag file
@@ -206,7 +206,7 @@ Print a summary of options and exit.
 Print version information on standard output then exit successfully.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
-To create tags from the file 'test.rpgle', you'd use
+To create tags from the file `test.rpgle', you'd use
 .PP
 .Vb 1
 \&    rpglectags test.rpgle
