@@ -88,7 +88,7 @@ EXAMPLES
 
     More examples:
 
-        rpglectags -o - test2.rpgle        # Print tags to stdout
+        rpglectags -f - test2.rpgle        # Print tags to stdout
         rpglectags -a test2.rpgle          # Append tags to the 'tags' file
 
 TAG FILE FORMAT
