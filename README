@@ -5,7 +5,12 @@ SYNOPSIS
     rpglectags [-f output] [-a] [--help] [--version] [files]...
 
 INSTALL
+    First clone this repository, and then run:
+
         sudo make install
+
+    This will install two files: "/usr/bin/rpglectags" and
+    "/usr/share/man/man1/rpglectags.1".
 
 DESCRIPTION
     rpglectags will create a ctags compatible file called 'tags'. This is
