@@ -182,7 +182,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.11';
+our $VERSION = '1.0.12';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
