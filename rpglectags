@@ -12,6 +12,7 @@ rpglectags - Creating ctags compatible files from RPGle files
 
 B<rpglectags>
 [B<-f output>]
+[B<-a>]
 [B<--help>]
 [B<--version>]
 [F<files>]...
@@ -171,7 +172,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.5';
+our $VERSION = '1.0.6';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;

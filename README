@@ -2,7 +2,7 @@ NAME
     rpglectags - Creating ctags compatible files from RPGle files
 
 SYNOPSIS
-    rpglectags [-f output] [--help] [--version] [files]...
+    rpglectags [-f output] [-a] [--help] [--version] [files]...
 
 DESCRIPTION
     rpglectags will create a ctags compatible file called 'tags'. This is
