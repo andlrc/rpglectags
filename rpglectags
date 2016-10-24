@@ -183,7 +183,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.1';
+our $VERSION = '1.1.2';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
@@ -238,7 +238,7 @@ sub get_tags {
   while (my $line = <>) {
     $line =~ y/\r//d; # Remove \r
 
-    if ($line =~ /end-proc/xi || $line =~ /^\s{0,7}p\s{17}e\b/xi) {
+    if ($. == 1 || $line =~ /end-proc/xi || $line =~ /^\s{0,7}p\s{17}e\b/xi) {
       $currentProc = undef;
       $currentProcRegex = undef;
       next;
@@ -448,6 +448,8 @@ sub get_tags {
       add_tag(\@tags, $tag);
       next;
     }
+  } continue {
+    close ARGV if eof;
   }
   return @tags;
 }
