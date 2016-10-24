@@ -183,7 +183,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.0.16';
+our $VERSION = '1.1.0';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
@@ -526,7 +526,13 @@ sub parse_fixed_dspi {
   my ($tags, $parentRegex, $line, $type, $tagfields) = @_;
 
   foreach (split("\n", $line)) {
-    next if /^\s{0,7}d[\w\s]{17}$type/xi;
+    # Remove the first line, as well as lines that doesn't have a name[1]
+    # [1] It's possible to align a DS meaning no name is given:
+    # d myDs            ds
+    # d field1                       256    varying
+    # d                                4    varying
+    # d field2                       256    varying
+    next if /^\s{0,7}d(\s{17}|[\w\s]{17}$type)/xi;
 
     my ($memberName) = $_ =~ /\s{0,7}d\s*(\w+)/xi;
     my $memberRegex  = '/^' . ($_ =~ s/(\s{0,7}d\s*\w+).*/$1/xir) . '/';
