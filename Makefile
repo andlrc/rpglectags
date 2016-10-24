@@ -20,4 +20,4 @@ clean-man:
 pod:
 	pod2text -q "\`'" rpglectags > README
 	awk '/=head1 DESCRIPTION/{ n=0 }/=head1 INSTALL/ { n=1 }!n' rpglectags \
-		| pod2man -n rpglectags -c 'RPG/ILE Ctags' -r '' -q "\`'" > rpglectags.1
+		| pod2man -d "$$(date +'%B %Y')" -n rpglectags -c 'RPG/ILE Ctags' -r '' -q "\`'" > rpglectags.1
