@@ -183,7 +183,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.2';
+our $VERSION = '1.1.3';
 
 my $currentProc      = undef;
 my $currentProcRegex = undef;
@@ -488,6 +488,10 @@ sub slurp_fixed_dspi {
   while (1) {
     my $pos       = tell(ARGV);
     my $next_line = <>;
+
+    # Empty lines doesn't mean the ds/pi stops, but doesn't contain any useful
+    # information either, just skip them.
+    next if $next_line =~ /^\s*$/;
 
     if ($next_line !~ /^\s{0,7}d(?=[\w\s]{17}\W)\s*\w+/xi) {
       seek(ARGV, $pos, 0);
