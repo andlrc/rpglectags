@@ -183,10 +183,10 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.3';
+our $VERSION = '1.1.4';
 
-my $currentProc      = undef;
-my $currentProcRegex = undef;
+my $currentProc        = undef;
+my $currentProcAddress = undef;
 
 my $output_file   = 'tags';
 my $append_output = 0;
@@ -239,8 +239,8 @@ sub get_tags {
     $line =~ y/\r//d; # Remove \r
 
     if ($. == 1 || $line =~ /end-proc/xi || $line =~ /^\s{0,7}p\s{17}e\b/xi) {
-      $currentProc = undef;
-      $currentProcRegex = undef;
+      $currentProc        = undef;
+      $currentProcAddress = undef;
       next;
     }
 
@@ -248,13 +248,13 @@ sub get_tags {
     if ($line =~ /\bdcl-proc\b/xi) {
       my $export     = $line =~ /\s+export\s*;\s*$/xi;
       my ($procName) = $line =~ /dcl-proc\s+(\w+)/xi;
-      my $regex      = '/^' . ($line =~ s/\s*(?:export)?;//xir) . '/';
-      $regex =~ y/\n//d;
+      my $address    = create_address($line =~ s/\s*(?:export)?;//xir);
+      $address       =~ y/\n//d;
 
       my $tag = {
         "tagname"    => $procName,
         "tagfile"    => $ARGV,
-        "tagaddress" => $regex,
+        "tagaddress" => $address,
         "tagfields"  => {
           "kind" => "f"
         }
@@ -262,16 +262,16 @@ sub get_tags {
 
       add_tag(\@tags, $tag);
 
-      $currentProc = $procName;
-      $currentProcRegex = $regex;
+      $currentProc        = $procName;
+      $currentProcAddress = $address;
 
       next;
     }
 
     # Fixed Procedure
     if ($line =~ /^\s{0,7}p(?=[\w\s]{17}b|\s*\w+\.\.\.)\s*\w+/xi) {
-      my $regex = '/^' . ($line =~ s/\s*\bb\b.*//xir) . '/';
-      $regex    =~ y/\n//d;
+      my $address = create_address($line =~ s/\s*\bb\b.*//xir);
+      $address    =~ y/\n//d;
 
       # RPG/ILE fixed can be multiply lines if the line is ending in ...
       if ($line =~ s/\.\.\.\s*$//xi) {
@@ -285,7 +285,7 @@ sub get_tags {
       my $tag = {
         "tagname"    => $procName,
         "tagfile"    => $ARGV,
-        "tagaddress" => $regex,
+        "tagaddress" => $address,
         "tagfields"  => {
           "kind" => "f"
         }
@@ -293,24 +293,27 @@ sub get_tags {
 
       add_tag(\@tags, $tag);
 
-      $currentProc = $procName;
-      $currentProcRegex = $regex;
+      $currentProc        = $procName;
+      $currentProcAddress = $address;
 
       next;
     }
 
     # Free 7.1 Pi
     if ($line =~ /\bdcl-pi\b/xi) {
-      my $piRegex = '/^' . ($line =~ s/(dcl-pi\s+\w+).*/$1/xir) . '/';
-      $piRegex    =~ y/\n//d;
+      my $piAddress = create_address($line =~ s/(dcl-pi\s+\w+).*/$1/xir);
+      $piAddress    =~ y/\n//d;
 
       # Slurp all lines from dcl-ds ... end-ds
       while ($line !~ /\bend-pi\b/xi) {
+        # We should never iterate over another file. This also prevents infinite
+        # iteration with misformed data
+        last if eof;
         $line .= <>;
         $line =~ y/\r//d; # Remove \r
       }
 
-      parse_free_dspi(\@tags, $piRegex, $line, 'pi', { "kind" => "v" });
+      parse_free_dspi(\@tags, $piAddress, $line, 'pi', { "kind" => "v" });
 
       next;
     }
@@ -318,22 +321,22 @@ sub get_tags {
     # Fixed Pi
     if ($line =~ /^\s{0,7}d[\w\s]{17}\bpi\b/xi) {
 
-      my $piRegex = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
-      $piRegex    =~ y/\n//d;
+      my $piAddress = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
+      $piAddress    =~ y/\n//d;
 
       # Slurp all lines from d xxxxxx ... d xxxxxx
       $line .= slurp_fixed_dspi();
 
-      parse_fixed_dspi(\@tags, $piRegex, $line, 'pi', { "kind" => "v" });
+      parse_fixed_dspi(\@tags, $piAddress, $line, 'pi', { "kind" => "v" });
 
       next;
     }
 
     # Free 7.1 DS
     if ($line =~ /\bdcl-ds\b/xi) {
-      my ($dsName) = $line =~ /dcl-ds\s+(\w+)/xi;
-      my $dsRegex  = '/^' . ($line =~ s/(dcl-ds\s+\w+).*/$1/xir) . '/';
-      $dsRegex     =~ y/\n//d;
+      my ($dsName)   = $line =~ /dcl-ds\s+(\w+)/xi;
+      my $dsAddress  = create_address($line =~ s/(dcl-ds\s+\w+).*/$1/xir);
+      $dsAddress     =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
@@ -342,7 +345,7 @@ sub get_tags {
       my $tag = {
         "tagname"    => $dsName,
         "tagfile"    => $ARGV,
-        "tagaddress" => $dsRegex,
+        "tagaddress" => $dsAddress,
         "tagfields"  => $tagfields
       };
 
@@ -353,6 +356,9 @@ sub get_tags {
 
       # Slurp all lines from dcl-ds ... end-ds
       while ($line !~ /\bend-ds\b/xi) {
+        # We should never iterate over another file. This also prevents infinite
+        # iteration with misformed data
+        last if eof;
         $line .= <>;
         $line =~ y/\r//d; # Remove \r
       }
@@ -361,7 +367,7 @@ sub get_tags {
       # structure
       next if ($line =~ /\b(extname)\b/xi);
 
-      parse_free_dspi(\@tags, $dsRegex, $line, 'ds', {
+      parse_free_dspi(\@tags, $dsAddress, $line, 'ds', {
         "kind"   => "m",
         "struct" => $dsName
       });
@@ -372,9 +378,9 @@ sub get_tags {
     # Fixed DS
     if ($line =~ /^\s{0,7}d[\w\s]{17}\bds\b/xi) {
 
-      my ($dsName) = $line =~ /^\s{0,7}d\s*(\w+)/xi;
-      my $dsRegex  = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
-      $dsRegex     =~ y/\n//d;
+      my ($dsName)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
+      my $dsAddress = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
+      $dsAddress    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
@@ -383,7 +389,7 @@ sub get_tags {
       my $tag = {
         "tagname"    => $dsName,
         "tagfile"    => $ARGV,
-        "tagaddress" => $dsRegex,
+        "tagaddress" => $dsAddress,
         "tagfields"  => $tagfields
       };
 
@@ -399,7 +405,7 @@ sub get_tags {
       # structure
       next if ($line =~ /\b(extname)\b/xi);
 
-      parse_fixed_dspi(\@tags, $dsRegex, $line, 'ds', {
+      parse_fixed_dspi(\@tags, $dsAddress, $line, 'ds', {
         "kind"   => "m",
         "struct" => "$dsName"
       });
@@ -409,9 +415,9 @@ sub get_tags {
 
     # Free 7.1 const and standalone
     if ($line =~ /\bdcl-[sc]\b/xi) {
-      my ($name) = $line =~ /dcl-[sc]\s+(\w+)/xi;
-      my $regex  = '/^' . ($line =~ s/(dcl-[sc]\s+\w+).*/$1/xir) . '/';
-      $regex     =~ y/\n//d;
+      my ($name)  = $line =~ /dcl-[sc]\s+(\w+)/xi;
+      my $address = create_address($line =~ s/(dcl-[sc]\s+\w+).*/$1/xir);
+      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "v"
@@ -420,7 +426,7 @@ sub get_tags {
       my $tag = {
         "tagname"    => $name,
         "tagfile"    => $ARGV,
-        "tagaddress" => $regex,
+        "tagaddress" => $address,
         "tagfields"  => $tagfields
       };
 
@@ -431,8 +437,8 @@ sub get_tags {
     # Fixed const and standalone
     if ($line =~ /^\s{0,7}d[\w\s]{17}\b[sc]\b/xi) {
       my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
-      my $regex   = '/^' . ($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir) . '/';
-      $regex      =~ y/\n//d;
+      my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
+      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "v"
@@ -441,7 +447,7 @@ sub get_tags {
       my $tag = {
         "tagname"    => $name,
         "tagfile"    => $ARGV,
-        "tagaddress" => $regex,
+        "tagaddress" => $address,
         "tagfields"  => $tagfields
       };
 
@@ -462,7 +468,7 @@ sub add_tag {
   my $tagaddress   = $tag->{tagaddress};
   my $tagfields    = $tag->{tagfields};
 
-  $tagaddress = "$currentProcRegex;$tagaddress" if $currentProcRegex;
+  $tagaddress = "$currentProcAddress;$tagaddress" if $currentProcAddress;
 
   my @tag = (
     $tagname,
@@ -486,6 +492,9 @@ sub add_tag {
 sub slurp_fixed_dspi {
   my $line = '';
   while (1) {
+    # We should never iterate over another file. This also prevents infinite
+    # iteration with misformed data
+    last if eof;
     my $pos       = tell(ARGV);
     my $next_line = <>;
 
@@ -507,18 +516,18 @@ sub slurp_fixed_dspi {
 }
 # Create tag entries in the @tags array from slurped lines.
 sub parse_free_dspi {
-  my ($tags, $parentRegex, $line, $type, $tagfields) = @_;
+  my ($tags, $parentAddress, $line, $type, $tagfields) = @_;
 
   foreach (split("\n", $line)) {
     next if /\bdcl-$type\b|\bend-$type\b/xi;
 
-    my ($memberName) = $_ =~ /\s*(\w+)/xi;
-    my $memberRegex  = '/^' . ($_ =~ s/(\s*\w+).*/$1/xir) . '/';
+    my ($memberName)  = /\s*(\w+)/xi;
+    my $memberAddress = create_address(s/(\s*\w+).*/$1/xir);
 
     my $tag = {
       "tagname"    => $memberName,
       "tagfile"    => $ARGV,
-      "tagaddress" => "$parentRegex;$memberRegex",
+      "tagaddress" => "$parentAddress;$memberAddress",
       "tagfields"  => $tagfields
     };
 
@@ -529,7 +538,7 @@ sub parse_free_dspi {
 }
 # Create tag entries in the @tags array from slurped lines from slurp_fixed_dspi
 sub parse_fixed_dspi {
-  my ($tags, $parentRegex, $line, $type, $tagfields) = @_;
+  my ($tags, $parentAddress, $line, $type, $tagfields) = @_;
 
   foreach (split("\n", $line)) {
     # Remove the first line, as well as lines that doesn't have a name[1]
@@ -540,13 +549,13 @@ sub parse_fixed_dspi {
     # d field2                       256    varying
     next if /^\s{0,7}d(\s{17}|[\w\s]{17}$type)/xi;
 
-    my ($memberName) = $_ =~ /\s{0,7}d\s*(\w+)/xi;
-    my $memberRegex  = '/^' . ($_ =~ s/(\s{0,7}d\s*\w+).*/$1/xir) . '/';
+    my ($memberName)  = /\s{0,7}d\s*(\w+)/xi;
+    my $memberAddress = create_address(s/(\s{0,7}d\s*\w+).*/$1/xir);
 
     my $tag = {
       "tagname"    => $memberName,
       "tagfile"    => $ARGV,
-      "tagaddress" => "$parentRegex;$memberRegex",
+      "tagaddress" => "$parentAddress;$memberAddress",
       "tagfields"  => $tagfields
     };
 
@@ -554,4 +563,14 @@ sub parse_fixed_dspi {
   }
 
   return;
+}
+# Create a tag address, everything but '^', '$' and '/' is literal, so
+# only those three characters needs to be escaped.
+# All addresses should be wrapped in /^.../
+sub create_address {
+  my ($address) = @_;
+
+  $address =~ s/[\^\/\$]/\\$&/g;
+
+  return "/^$address/";
 }
