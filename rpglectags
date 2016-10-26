@@ -191,7 +191,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.6';
+our $VERSION = '1.1.7';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -256,7 +256,6 @@ sub get_tags {
     if ($line =~ /(^\s*dcl-proc\s+(\w+))/xi) {
       my $name    = $2;
       my $address = create_address($1);
-      $address    =~ y/\n//d;
 
       my $tag = {
         "tagname"    => $name,
@@ -278,7 +277,6 @@ sub get_tags {
     # Fixed Procedure
     if ($line =~ /^\s{0,7}p(?=[\w\s]{17}b|\s*\w+\.\.\.)\s*\w+/xi) {
       my $address = create_address($line =~ s/\s*\bb\b.*//xir);
-      $address    =~ y/\n//d;
 
       # RPG/ILE fixed can be multiply lines if the line is ending in ...
       if ($line =~ s/\.\.\.\s*$//xi) {
@@ -309,7 +307,6 @@ sub get_tags {
     # Free 7.1 Pi
     if ($line =~ /(^\s*dcl-pi\b)/xi) {
       my $address = create_address($1);
-      $address    =~ y/\n//d;
 
       # Slurp all lines from dcl-ds ... end-ds
       while ($line !~ /\bend-pi\b/xi) {
@@ -329,7 +326,6 @@ sub get_tags {
     if ($line =~ /^\s{0,7}d[\w\s]{17}\bpi\b/xi) {
 
       my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address    =~ y/\n//d;
 
       # Slurp all lines from d xxxxxx ... d xxxxxx
       $line .= slurp_fixed_dspi();
@@ -343,7 +339,6 @@ sub get_tags {
     if ($line =~ /(^\s*\bbegsr\s+(\w+))/xi) {
       my $name    = $2;
       my $address = create_address($1);
-      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "f"
@@ -366,7 +361,6 @@ sub get_tags {
 
       my ($name) = $line =~ /^\s{0,7}c\s*(\w+)/xi;
       my $address= create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address   =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "f"
@@ -388,7 +382,6 @@ sub get_tags {
     if ($line =~ /(^\s*\bdcl-ds\s+(\w+))/xi) {
       my $name    = $2;
       my $address = create_address($1);
-      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
@@ -432,7 +425,6 @@ sub get_tags {
 
       my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
       my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
@@ -469,7 +461,6 @@ sub get_tags {
     if ($line =~ /(^\s*\bdcl-[sc]\s+(\w+))/xi) {
       my $name    = $2;
       my $address = create_address($1);
-      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "v"
@@ -490,7 +481,6 @@ sub get_tags {
     if ($line =~ /^\s{0,7}d[\w\s]{17}\b[sc]\b/xi) {
       my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
       my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "v"
@@ -573,17 +563,19 @@ sub parse_free_dspi {
   foreach (split("\n", $line)) {
     next if /\bdcl-$type\b|\bend-$type\b/xi;
 
-    my ($memberName)  = /\s*(\w+)/xi;
-    my $memberAddress = create_address(s/(\s*\w+).*/$1/xir);
+    if (/(^\s*(\w+))/) {
+      my $name    = $2;
+      my $address = create_address($1);
 
-    my $tag = {
-      "tagname"    => $memberName,
-      "tagfile"    => $ARGV,
-      "tagaddress" => "$parentAddress;$memberAddress",
-      "tagfields"  => $tagfields
-    };
+      my $tag = {
+        "tagname"    => $name,
+        "tagfile"    => $ARGV,
+        "tagaddress" => "$parentAddress;$address",
+        "tagfields"  => $tagfields
+      };
 
-    add_tag($tags, $tag);
+      add_tag($tags, $tag);
+    }
   }
 
   return;
@@ -601,17 +593,19 @@ sub parse_fixed_dspi {
     # d field2                       256    varying
     next if /^\s{0,7}d(\s{17}|[\w\s]{17}$type)/xi;
 
-    my ($memberName)  = /\s{0,7}d\s*(\w+)/xi;
-    my $memberAddress = create_address(s/(\s{0,7}d\s*\w+).*/$1/xir);
+    if (/(\s{0,7}d\s*(\w+))/xi) {
+      my $name    = $2;
+      my $address = create_address($1);
 
-    my $tag = {
-      "tagname"    => $memberName,
-      "tagfile"    => $ARGV,
-      "tagaddress" => "$parentAddress;$memberAddress",
-      "tagfields"  => $tagfields
-    };
+      my $tag = {
+        "tagname"    => $name,
+        "tagfile"    => $ARGV,
+        "tagaddress" => "$parentAddress;$address",
+        "tagfields"  => $tagfields
+      };
 
-    add_tag($tags, $tag);
+      add_tag($tags, $tag);
+    }
   }
 
   return;
@@ -621,6 +615,7 @@ sub parse_fixed_dspi {
 # All addresses should be wrapped in /^.../
 sub create_address {
   my ($address) = @_;
+  $address      =~ y/\n//d;
 
   $address =~ s/[\^\/\$]/\\$&/g;
 
