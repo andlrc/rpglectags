@@ -191,7 +191,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.5';
+our $VERSION = '1.1.6';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -253,14 +253,13 @@ sub get_tags {
     }
 
     # Free 7.1 Procedure
-    if ($line =~ /\bdcl-proc\b/xi) {
-      my $export     = $line =~ /\s+export\s*;\s*$/xi;
-      my ($procName) = $line =~ /dcl-proc\s+(\w+)/xi;
-      my $address    = create_address($line =~ s/\s*(?:export)?;//xir);
-      $address       =~ y/\n//d;
+    if ($line =~ /(^\s*dcl-proc\s+(\w+))/xi) {
+      my $name    = $2;
+      my $address = create_address($1);
+      $address    =~ y/\n//d;
 
       my $tag = {
-        "tagname"    => $procName,
+        "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => {
@@ -270,7 +269,7 @@ sub get_tags {
 
       add_tag(\@tags, $tag);
 
-      $currentProc        = $procName;
+      $currentProc        = $name;
       $currentProcAddress = $address;
 
       next;
@@ -308,8 +307,8 @@ sub get_tags {
     }
 
     # Free 7.1 Pi
-    if ($line =~ /\bdcl-pi\b/xi) {
-      my $address = create_address($line =~ s/(dcl-pi\s+\w+).*/$1/xir);
+    if ($line =~ /(^\s*dcl-pi\b)/xi) {
+      my $address = create_address($1);
       $address    =~ y/\n//d;
 
       # Slurp all lines from dcl-ds ... end-ds
@@ -341,18 +340,17 @@ sub get_tags {
     }
 
     # Free subroutine declaraion (glorified goto)
-    if ($line =~ /^\s*begsr\s+\w+/) {
-
-      my ($subName) = $line =~ /^\s*begsr\s+(\w+)/xi;
-      my $address   = create_address($line =~ s/(^\s*begsr\s+\w+).*/$1/xir);
-      $address      =~ y/\n//d;
+    if ($line =~ /(^\s*\bbegsr\s+(\w+))/xi) {
+      my $name    = $2;
+      my $address = create_address($1);
+      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "f"
       };
 
       my $tag = {
-        "tagname"    => $subName,
+        "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields
@@ -366,16 +364,16 @@ sub get_tags {
     # Fixed subroutine declaraion (glorified goto)
     if ($line =~ /^\s{0,7}c[\w\s]{19}\bbegsr\b/) {
 
-      my ($subName) = $line =~ /^\s{0,7}c\s*(\w+)/xi;
-      my $address   = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address      =~ y/\n//d;
+      my ($name) = $line =~ /^\s{0,7}c\s*(\w+)/xi;
+      my $address= create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
+      $address   =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "f"
       };
 
       my $tag = {
-        "tagname"    => $subName,
+        "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields
@@ -387,17 +385,17 @@ sub get_tags {
     }
 
     # Free 7.1 DS
-    if ($line =~ /\bdcl-ds\b/xi) {
-      my ($dsName) = $line =~ /dcl-ds\s+(\w+)/xi;
-      my $address  = create_address($line =~ s/(dcl-ds\s+\w+).*/$1/xir);
-      $address     =~ y/\n//d;
+    if ($line =~ /(^\s*\bdcl-ds\s+(\w+))/xi) {
+      my $name    = $2;
+      my $address = create_address($1);
+      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
       };
 
       my $tag = {
-        "tagname"    => $dsName,
+        "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields
@@ -423,7 +421,7 @@ sub get_tags {
 
       parse_free_dspi(\@tags, $address, $line, 'ds', {
         "kind"   => "m",
-        "struct" => $dsName
+        "struct" => $name
       });
 
       next;
@@ -432,16 +430,16 @@ sub get_tags {
     # Fixed DS
     if ($line =~ /^\s{0,7}d[\w\s]{17}\bds\b/xi) {
 
-      my ($dsName) = $line =~ /^\s{0,7}d\s*(\w+)/xi;
-      my $address  = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
-      $address     =~ y/\n//d;
+      my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
+      my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir);
+      $address    =~ y/\n//d;
 
       my $tagfields = {
         "kind" => "s"
       };
 
       my $tag = {
-        "tagname"    => $dsName,
+        "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields
@@ -461,16 +459,16 @@ sub get_tags {
 
       parse_fixed_dspi(\@tags, $address, $line, 'ds', {
         "kind"   => "m",
-        "struct" => "$dsName"
+        "struct" => "$name"
       });
 
       next;
     }
 
     # Free 7.1 const and standalone
-    if ($line =~ /\bdcl-[sc]\b/xi) {
-      my ($name)  = $line =~ /dcl-[sc]\s+(\w+)/xi;
-      my $address = create_address($line =~ s/(dcl-[sc]\s+\w+).*/$1/xir);
+    if ($line =~ /(^\s*\bdcl-[sc]\s+(\w+))/xi) {
+      my $name    = $2;
+      my $address = create_address($1);
       $address    =~ y/\n//d;
 
       my $tagfields = {
