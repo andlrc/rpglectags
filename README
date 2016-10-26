@@ -43,6 +43,13 @@ DESCRIPTION
         and `_' is a literal space. Up to 7 leading spaces will be
         supported.
 
+    Subroutines
+        Free format is supported though `begsr'.
+
+        Fixed format is supported though `cxxxxxxxxxxxxxxxxxxxbegsr'.
+        Continues declarations is not supported. Up to 7 leading spaces will
+        be supported.
+
     Prodecure interface
         Free format is supported though `dcl-pi'.
 
