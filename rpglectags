@@ -191,7 +191,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.1.7';
+our $VERSION = '1.2.0';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
