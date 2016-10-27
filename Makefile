@@ -23,5 +23,5 @@ pod:
 		| pod2man -d "$$(date +'%B %Y')" \
 			-n rpglectags \
 			-c 'RPG/ILE Ctags' \
-			-r "$$(rpglectags --version)" \
+			-r "$$(./rpglectags --version)" \
 			-q "\`'" > rpglectags.1
