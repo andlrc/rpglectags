@@ -209,7 +209,7 @@ GetOptions(
 main();
 
 sub main {
-  my @tags = get_tags();
+  my @tags        = get_tags();
   my @tabbed_tags = ();
 
   push(@tabbed_tags,
@@ -245,7 +245,7 @@ sub get_tags {
   my @tags = ();
 
   while (my $line = <>) {
-    $line =~ y/\r//d; # Remove \r
+    $line =~ y/\r//d;
 
     if ($. == 1 || $line =~ /end-proc/xi || $line =~ /^\s{0,7}p[\w\s]{17}e\b/xi) {
       $currentProc        = undef;
@@ -282,7 +282,7 @@ sub get_tags {
       # RPG/ILE fixed can be multiply lines if the line is ending in ...
       if ($line =~ s/\.\.\.\s*$//xi) {
         $line .= <> =~ s/\s{0,7}p\b//xir;
-        $line =~ y/\r//d; # Remove \r
+        $line =~ y/\r//d;
       }
 
       my $export     = $line =~ /\s+export\s*$/xi;
@@ -315,7 +315,7 @@ sub get_tags {
         # iteration with misformed data
         last if eof;
         $line .= <>;
-        $line =~ y/\r//d; # Remove \r
+        $line =~ y/\r//d;
       }
 
       push(@tags, parse_free_dspi($address, $line, 'pi', {
@@ -364,8 +364,8 @@ sub get_tags {
     # Fixed subroutine declaraion (glorified goto)
     if ($line =~ /^\s{0,7}c[\w\s]{19}\bbegsr\b/) {
 
-      my ($name) = $line =~ /^\s{0,7}c\s*(\w+)/xi;
-      my $address= create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir, 1);
+      my ($name)  = $line =~ /^\s{0,7}c\s*(\w+)/xi;
+      my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir, 1);
 
       my $tagfields = {
         "kind" => "f"
@@ -410,7 +410,7 @@ sub get_tags {
         # iteration with misformed data
         last if eof;
         $line .= <>;
-        $line =~ y/\r//d; # Remove \r
+        $line =~ y/\r//d;
       }
 
       # Don't try to find members if this DS is based on an external database
@@ -510,11 +510,11 @@ sub get_tags {
 }
 # Contains a tag hash to a <TAB> seperated line
 sub convert_tag {
-  my ($tag) = @_;
-  my $tagname      = $tag->{tagname};
-  my $tagfile      = $tag->{tagfile};
-  my $tagaddress   = $tag->{tagaddress};
-  my $tagfields    = $tag->{tagfields};
+  my ($tag)      = @_;
+  my $tagname    = $tag->{tagname};
+  my $tagfile    = $tag->{tagfile};
+  my $tagaddress = $tag->{tagaddress};
+  my $tagfields  = $tag->{tagfields};
 
   my @tag = (
     $tagname,
@@ -555,7 +555,7 @@ sub slurp_fixed_dspi {
     $line .= $next_line;
   }
 
-  $line =~ y/\r//d; # Remove \r
+  $line =~ y/\r//d;
 
   return $line;
 }
@@ -622,9 +622,9 @@ sub parse_fixed_dspi {
 # All addresses should be wrapped in /^.../
 sub create_address {
   my ($address, $addProc) = @_;
-  $address      =~ y/\n//d;
-  $address      =~ s/[\^\/\$]/\\$&/g;
 
+  $address =~ y/\n//d;
+  $address =~ s/[\^\/\$]/\\$&/g; # Escape '^', '$' and '/'
   $address = "/^$address/";
 
   $address = "$currentProcAddress;$address" if $addProc && $currentProcAddress;
