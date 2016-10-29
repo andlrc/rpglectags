@@ -39,7 +39,7 @@ DESCRIPTION
 
         Fixed format is supported though `pxxxxxxxxxxxxxxxxxb'. Continues
         procedure names is also supported, i.e.
-        `pxxxxxx...\nd_________________b'. Where `\n' is a literal newline
+        `pxxxxxx...\np_________________b'. Where `\n' is a literal newline
         and `_' is a literal space. Up to 7 leading spaces will be
         supported.
 
@@ -54,7 +54,9 @@ DESCRIPTION
         Free format is supported though `dcl-pi'.
 
         Fixed format is supported though `dxxxxxxxxxxxxxxxxxpi'. Continues
-        declarations is not supported. Up to 7 leading spaces will be
+        prodecure interfaces is also supported, i.e.
+        `dxxxxxx...\nd_________________pi'. Where `\n' is a literal newline
+        and `_' is a literal space. Up to 7 leading spaces will be
         supported.
 
     Data structures
