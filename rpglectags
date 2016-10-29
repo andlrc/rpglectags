@@ -52,7 +52,7 @@ At the moment there is support for:
 Free format is supported though C<dcl-proc>.
 
 Fixed format is supported though C<pxxxxxxxxxxxxxxxxxb>. Continues procedure
-names is also supported, i.e. C<pxxxxxx...\nd_________________b>. Where C<\n> is
+names is also supported, i.e. C<pxxxxxx...\np_________________b>. Where C<\n> is
 a literal newline and C<_> is a literal space. Up to 7 leading spaces will be
 supported.
 
@@ -68,8 +68,10 @@ declarations is not supported. Up to 7 leading spaces will be supported.
 
 Free format is supported though C<dcl-pi>.
 
-Fixed format is supported though C<dxxxxxxxxxxxxxxxxxpi>. Continues declarations
-is not supported. Up to 7 leading spaces will be supported.
+Fixed format is supported though C<dxxxxxxxxxxxxxxxxxpi>. Continues prodecure
+interfaces is also supported, i.e. C<dxxxxxx...\nd_________________pi>. Where
+C<\n> is a literal newline and C<_> is a literal space. Up to 7 leading spaces
+will be supported.
 
 =item B<Data structures>
 
@@ -192,7 +194,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.2.2';
+our $VERSION = '1.2.3';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -286,7 +288,6 @@ sub get_tags {
         $line =~ y/\r//d;
       }
 
-      my $export     = $line =~ /\s+export\s*$/xi;
       my ($procName) = $line =~ /\s{0,7}p\s+(\w+)/xi;
 
       my $tag = {
@@ -327,7 +328,13 @@ sub get_tags {
     }
 
     # Fixed Pi
-    if ($line =~ /^\s{0,7}d[\w\s]{17}\bpi\b/xi) {
+    if ($line =~ /^\s{0,7}d(?=[\w\s]{17}pi|\s*\w+\.\.\.)\s*\w+/xi) {
+
+      # RPG/ILE fixed can be multiply lines if the line is ending in ...
+      if ($line =~ s/\.\.\.\s*$//xi) {
+        $line .= <> =~ s/\s{0,7}pi\b//xir;
+        $line =~ y/\r//d;
+      }
 
       my $address = create_address($line =~ s/(^\s{0,7}d\s*\w+).*/$1/xir, 1);
 
