@@ -186,12 +186,13 @@ the same terms as Perl itself.
 
 use strict;
 use warnings;
+use v5.16;
 use Getopt::Long;
 use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.2.1';
+our $VERSION = '1.2.2';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -214,7 +215,7 @@ sub main {
 
   push(@tabbed_tags,
     join("\t", '!_TAG_FILE_FORMAT', '2', '//'),
-    join("\t", '!_TAG_FILE_SORTED', '1', '//'),
+    join("\t", '!_TAG_FILE_SORTED', '2', '//'),
     join("\t", '!_TAG_PROGRAM_AUTHOR', 'Andreas Louv', '/andreas@louv.dk/'),
     join("\t", '!_TAG_PROGRAM_NAME', 'rpglectags', '//'),
     join("\t", '!_TAG_PROGRAM_URL', 'https://github.com/andlrc/rpglectags', '/Official Website/'),
@@ -225,7 +226,7 @@ sub main {
     push(@tabbed_tags, convert_tag($tag));
   }
 
-  @tabbed_tags = sort(@tabbed_tags);
+  @tabbed_tags = sort({ fc($a) cmp fc($b) } @tabbed_tags);
 
   if ($output_file ne '-') {
     open(my $tags_fh, '>' . ('>' x $append_output), $output_file)
