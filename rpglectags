@@ -14,6 +14,8 @@ B<rpglectags>
 [B<--version>]
 [F<files>]...
 
+=begin :text
+
 =head1 INSTALL
 
 First clone this repository, and then run:
@@ -26,6 +28,8 @@ C</usr/share/man/man1/rpglectags.1>.
 One can uninstall by running:
 
     sudo make clean
+
+=end :text
 
 =head1 DESCRIPTION
 
