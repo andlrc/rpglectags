@@ -1,27 +1,30 @@
 mandir=/usr/share/man/man1
+prgname=rpglectags
 cmddir=/usr/bin
+title=RPG/ILE Ctags
+version=$$(./$(prgname) --version)
 
 install: install-man install-cmd
 
 clean: clean-man clean-cmd
 
 install-cmd:
-	cp rpglectags $(cmddir)/rpglectags
+	cp $(prgname) $(cmddir)/$(prgname)
 
 clean-cmd:
-	rm $(cmddir)/rpglectags
+	rm $(cmddir)/$(prgname)
 
 install-man:
-	cp rpglectags.1 $(mandir)/rpglectags.1
+	cp $(prgname).1 $(mandir)/$(prgname).1
 
 clean-man:
-	rm $(mandir)/rpglectags.1
+	rm $(mandir)/$(prgname).1
 
 pod:
-	pod2text -q "\`'" rpglectags > README
-	awk '/=head1 DESCRIPTION/{ n=0 }/=head1 INSTALL/ { n=1 }!n' rpglectags \
+	pod2text -q "\`'" $(prgname) > README
+	awk '/=head1 DESCRIPTION/{ n=0 }/=head1 INSTALL/ { n=1 }!n' $(prgname) \
 		| pod2man -d "$$(date +'%B %Y')" \
-			-n rpglectags \
-			-c 'RPG/ILE Ctags' \
-			-r "$$(./rpglectags --version)" \
-			-q "\`'" > rpglectags.1
+			-n $(prgname) \
+			-c '$(title)' \
+			-r "$(version)" \
+			-q "\`'" > $(prgname).1
