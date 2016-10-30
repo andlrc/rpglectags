@@ -2,7 +2,7 @@ mandir=/usr/share/man/man1
 prgname=rpglectags
 cmddir=/usr/bin
 title=RPG/ILE Ctags
-version=$$(./$(prgname) --version)
+version=$(shell ./$(prgname) --version)
 
 install: install-man install-cmd
 
@@ -23,7 +23,8 @@ clean-man:
 pod:
 	pod2text -q "\`'" $(prgname) > README
 	awk '/=head1 DESCRIPTION/{ n=0 }/=head1 INSTALL/ { n=1 }!n' $(prgname) \
-		| pod2man -d "$$(date +'%B %Y')" \
+		| pod2man \
+			-d "$$(date +'%B %Y')" \
 			-n $(prgname) \
 			-c '$(title)' \
 			-r "$(version)" \
