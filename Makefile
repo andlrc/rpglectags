@@ -1,7 +1,8 @@
-mandir=/usr/share/man/man1
 prgname=rpglectags
-cmddir=/usr/bin
 title=RPG/ILE Ctags
+
+cmddir=/usr/bin
+mandir=/usr/share/man/man1
 version=$(shell ./$(prgname) --version)
 
 install: install-man install-cmd
