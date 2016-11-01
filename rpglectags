@@ -198,7 +198,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.2.3';
+our $VERSION = '1.2.4';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -229,7 +229,10 @@ sub main {
   );
 
   foreach my $tag (@tags) {
-    push(@tabbed_tags, convert_tag($tag));
+    my @converted_tag = convert_tag($tag);
+    if (@converted_tag) {
+      push(@tabbed_tags, @converted_tag);
+    }
   }
 
   @tabbed_tags = sort({ fc($a) cmp fc($b) } @tabbed_tags);
@@ -520,13 +523,17 @@ sub get_tags {
   }
   return @tags;
 }
-# Contains a tag hash to a <TAB> seperated line
+# Contains a tag hash to a <TAB> separated line
 sub convert_tag {
   my ($tag)      = @_;
   my $tagname    = $tag->{tagname};
   my $tagfile    = $tag->{tagfile};
   my $tagaddress = $tag->{tagaddress};
   my $tagfields  = $tag->{tagfields};
+
+  # Sometimes we add wrong tags, some of these doesn't contain all needed
+  # information. 
+  return unless $tagname && $tagfile && $tagaddress;
 
   my @tag = (
     $tagname,
