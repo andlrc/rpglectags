@@ -215,7 +215,8 @@ GetOptions(
 
 main();
 
-sub main {
+sub main
+{
   my @tags        = get_tags();
   my @tabbed_tags = ();
 
@@ -251,7 +252,8 @@ sub main {
 }
 # Returns an array of tag hashes that contains:
 # tagname, tagfile, tagaddress and tagfields
-sub get_tags {
+sub get_tags
+{
   my @tags = ();
 
   while (my $line = <>) {
@@ -524,7 +526,8 @@ sub get_tags {
   return @tags;
 }
 # Contains a tag hash to a <TAB> separated line
-sub convert_tag {
+sub convert_tag
+{
   my ($tag)      = @_;
   my $tagname    = $tag->{tagname};
   my $tagfile    = $tag->{tagfile};
@@ -532,7 +535,7 @@ sub convert_tag {
   my $tagfields  = $tag->{tagfields};
 
   # Sometimes we add wrong tags, some of these doesn't contain all needed
-  # information. 
+  # information.
   return unless $tagname && $tagfile && $tagaddress;
 
   my @tag = (
@@ -553,7 +556,8 @@ sub convert_tag {
 # (Simplified):
 # d hello\s*$
 # \s*d hello\s*$
-sub slurp_fixed_dspi {
+sub slurp_fixed_dspi
+{
   my $line = '';
   while (1) {
     # We should never iterate over another file. This also prevents infinite
@@ -579,7 +583,8 @@ sub slurp_fixed_dspi {
   return $line;
 }
 # Create tag entries in the @tags array from slurped lines.
-sub parse_free_dspi {
+sub parse_free_dspi
+{
   my ($parentAddress, $line, $type, $tagfields) = @_;
 
   my @tags = ();
@@ -605,7 +610,8 @@ sub parse_free_dspi {
   return @tags;
 }
 # Create tag entries in the @tags array from slurped lines from slurp_fixed_dspi
-sub parse_fixed_dspi {
+sub parse_fixed_dspi
+{
   my ($parentAddress, $line, $type, $tagfields) = @_;
 
   my @tags = ();
@@ -639,7 +645,8 @@ sub parse_fixed_dspi {
 # Create a tag address, everything but '^', '$' and '/' is literal, so
 # only those three characters needs to be escaped.
 # All addresses should be wrapped in /^.../
-sub create_address {
+sub create_address
+{
   my ($address, $addProc) = @_;
 
   $address =~ y/\n//d;
