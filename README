@@ -17,8 +17,7 @@ INSTALL
         sudo make clean
 
 DESCRIPTION
-    rpglectags will create a ctags compatible file called `tags'. This is
-    work in process.
+    rpglectags will create a ctags compatible file called `tags'.
 
     The rpglectags program generate an index (or `tag') file for RPG/ILE
     objects found in file(s). This tag file allows these items to be quickly

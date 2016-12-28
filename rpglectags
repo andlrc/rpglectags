@@ -33,8 +33,7 @@ One can uninstall by running:
 
 =head1 DESCRIPTION
 
-B<rpglectags> will create a ctags compatible file called `tags'. This is work
-in process.
+B<rpglectags> will create a ctags compatible file called `tags'.
 
 The B<rpglectags> program generate an index (or `tag') file for RPG/ILE objects
 found in file(s). This tag file allows these items to be quickly and easily
@@ -214,7 +213,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.3.1';
+our $VERSION = '1.4.0';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
