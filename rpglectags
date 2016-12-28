@@ -68,11 +68,11 @@ Fixed format is supported though C<cxxxxxxxxxxxxxxxxxxxbegsr>. Continues
 declarations is not supported. Up to 7 leading spaces will be supported.
 
 
-=item B<Prodecure interface>
+=item B<Procedure interface>
 
 Free format is supported though C<dcl-pi>.
 
-Fixed format is supported though C<dxxxxxxxxxxxxxxxxxpi>. Continues prodecure
+Fixed format is supported though C<dxxxxxxxxxxxxxxxxxpi>. Continues procedure
 interfaces is also supported, i.e. C<dxxxxxx...\nd_________________pi>. Where
 C<\n> is a literal newline and C<_> is a literal space. Up to 7 leading spaces
 will be supported.
@@ -214,7 +214,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.3.0';
+our $VERSION = '1.3.1';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;

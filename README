@@ -50,11 +50,11 @@ DESCRIPTION
         Continues declarations is not supported. Up to 7 leading spaces will
         be supported.
 
-    Prodecure interface
+    Procedure interface
         Free format is supported though `dcl-pi'.
 
         Fixed format is supported though `dxxxxxxxxxxxxxxxxxpi'. Continues
-        prodecure interfaces is also supported, i.e.
+        procedure interfaces is also supported, i.e.
         `dxxxxxx...\nd_________________pi'. Where `\n' is a literal newline
         and `_' is a literal space. Up to 7 leading spaces will be
         supported.
