@@ -127,6 +127,13 @@ TAG FILE FORMAT
     7.  Extra fields narrowing down the type of tag entry, i.e. kind:{fvms},
         struct:nameOfStruct
 
+EXIT STATUS
+    The following exit values shall be returned:
+
+    0   Successful completion.
+
+    1   Error parsing command-line argument.
+
 SEE ALSO
     ctags(1)
 

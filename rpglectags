@@ -175,6 +175,22 @@ struct:nameOfStruct
 
 =back
 
+=head1 EXIT STATUS
+
+The following exit values shall be returned:
+
+=over 4
+
+=item B<0>
+
+Successful completion.
+
+=item B<1>
+
+Error parsing command-line argument.
+
+=back
+
 =head1 SEE ALSO
 
 ctags(1)
@@ -198,7 +214,7 @@ use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.2.5';
+our $VERSION = '1.3.0';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -207,7 +223,7 @@ my $output_file   = 'tags';
 my $append_output = 0;
 
 GetOptions(
-  "f=s" => \$output_file,
+  "f|o=s" => \$output_file,
   "a" => \$append_output,
   "help" => sub { pod2usage(-verbose => 1); exit },
   "version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }
@@ -521,8 +537,10 @@ sub get_tags
       next;
     }
   } continue {
+    # Make sure $. starts from 1 for each file:
     close ARGV if eof;
   }
+
   return @tags;
 }
 # Contains a tag hash to a <TAB> separated line

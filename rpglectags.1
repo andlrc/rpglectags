@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "rpglectags 1"
-.TH rpglectags 1 "December 2016" "rpglectags v1.2.5" "RPG/ILE Ctags"
+.TH rpglectags 1 "December 2016" "rpglectags v1.3.0" "RPG/ILE Ctags"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -266,6 +266,15 @@ A constant `;"' for backward compatibility with \fIvi\fR\|(1)
 .IX Item "7."
 Extra fields narrowing down the type of tag entry, i.e. kind:{fvms},
 struct:nameOfStruct
+.SH "EXIT STATUS"
+.IX Header "EXIT STATUS"
+The following exit values shall be returned:
+.IP "\fB0\fR" 4
+.IX Item "0"
+Successful completion.
+.IP "\fB1\fR" 4
+.IX Item "1"
+Error parsing command-line argument.
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 \&\fIctags\fR\|(1)
