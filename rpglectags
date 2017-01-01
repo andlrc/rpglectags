@@ -209,11 +209,10 @@ use strict;
 use warnings;
 use v5.16;
 use Getopt::Long;
-use Pod::Usage;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.4.0';
+our $VERSION = '1.4.1';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -224,7 +223,10 @@ my $append_output = 0;
 GetOptions(
   "f|o=s" => \$output_file,
   "a" => \$append_output,
-  "help" => sub { pod2usage(-verbose => 1); exit },
+  "help" => sub {
+    printf "%s [-f output] [-a] [--help] [--version] [files]...\n", $APP;
+    exit;
+  },
   "version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }
 ) or exit 1;
 
