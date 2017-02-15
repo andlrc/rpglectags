@@ -2,7 +2,7 @@ NAME
     rpglectags - Creating ctags compatible files from RPG/ILE files
 
 SYNOPSIS
-    rpglectags [-f output] [-a] [--help] [--version] [files]...
+    rpglectags [-f output | -o output] [-a] [--help] [--version] [files]...
 
 INSTALL
     First clone this repository, and then run:
@@ -73,7 +73,7 @@ DESCRIPTION
         to 7 leading spaces will be supported.
 
 OPTIONS
-    -f *file*
+    -f *file* | -o *file*
         Write tags til specified file. Value of `-' writes tags to stdout.
         Default is `tags'
 

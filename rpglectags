@@ -8,7 +8,7 @@ rpglectags - Creating ctags compatible files from RPG/ILE files
 =head1 SYNOPSIS
 
 B<rpglectags>
-[B<-f output>]
+[B<-f output | -o output>]
 [B<-a>]
 [B<--help>]
 [B<--version>]
@@ -97,7 +97,7 @@ leading spaces will be supported.
 
 =over 4
 
-=item B<-f> I<file>
+=item B<-f> I<file> | B<-o> I<file>
 
 Write tags til specified file. Value of `-' writes tags to stdout.
 Default is `tags'
@@ -212,7 +212,7 @@ use Getopt::Long;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.4.1';
+our $VERSION = '1.4.2';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -224,7 +224,7 @@ GetOptions(
   "f|o=s" => \$output_file,
   "a" => \$append_output,
   "help" => sub {
-    printf "%s [-f output] [-a] [--help] [--version] [files]...\n", $APP;
+    printf "%s [-f output | -o output] [-a] [--help] [--version] [files]...\n", $APP;
     exit;
   },
   "version" => sub { printf "%s v%s\n", $APP, $VERSION; exit }

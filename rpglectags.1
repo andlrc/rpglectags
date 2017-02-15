@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "rpglectags 1"
-.TH rpglectags 1 "January 2017" "rpglectags v1.4.1" "RPG/ILE Ctags"
+.TH rpglectags 1 "February 2017" "rpglectags v1.4.2" "RPG/ILE Ctags"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -139,7 +139,7 @@ rpglectags \- Creating ctags compatible files from RPG/ILE files
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 \&\fBrpglectags\fR
-[\fB\-f output\fR]
+[\fB\-f output | \-o output\fR]
 [\fB\-a\fR]
 [\fB\-\-help\fR]
 [\fB\-\-version\fR]
@@ -199,8 +199,8 @@ Fixed format is supported though \f(CW\*(C`dxxxxxxxxxxxxxxxxxs\*(C'\fR and
 leading spaces will be supported.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
-.IP "\fB\-f\fR \fIfile\fR" 4
-.IX Item "-f file"
+.IP "\fB\-f\fR \fIfile\fR | \fB\-o\fR \fIfile\fR" 4
+.IX Item "-f file | -o file"
 Write tags til specified file. Value of `\-' writes tags to stdout.
 Default is `tags'
 .IP "\fB\-a\fR" 4
