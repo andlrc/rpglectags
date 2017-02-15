@@ -1,35 +1,36 @@
-prgname=rpglectags
-title=RPG/ILE Ctags
+PRGNAME=rpglectags
+TITLE=RPG/ILE Ctags
+VERSION=$(shell ./$(PRGNAME) --version)
 
-cmddir=/usr/bin
-mandir=/usr/share/man/man1
-version=$(shell ./$(prgname) --version)
+DESTDIR=
+CMDDIR=$(DESTDIR)/usr/bin
+MANDIR=$(DESTDIR)/usr/share/man/man1
 
 install: install-man install-cmd
 
 clean: clean-man clean-cmd
 
 install-cmd:
-	cp $(prgname) $(cmddir)/$(prgname)
+	cp $(PRGNAME) $(CMDDIR)/$(PRGNAME)
 
 clean-cmd:
-	rm $(cmddir)/$(prgname)
+	rm $(CMDDIR)/$(PRGNAME)
 
-install-man:
-	cp $(prgname).1 $(mandir)/$(prgname).1
+install-man: $(PRGNAME).1
+	cp $(PRGNAME).1 $(MANDIR)/$(PRGNAME).1
 
 clean-man:
-	rm $(mandir)/$(prgname).1
+	rm $(MANDIR)/$(PRGNAME).1
 
-pod: README $(prgname).1
+pod: README $(PRGNAME).1
 
-README: $(prgname)
-	pod2text -q "\`'" $(prgname) > README
+README: $(PRGNAME)
+	pod2text -q "\`'" $(PRGNAME) > README
 
-$(prgname).1: $(prgname)
-	pod2man $(prgname) \
+$(PRGNAME).1: $(PRGNAME)
+	pod2man $(PRGNAME) \
 		-d "$$(date +'%B %Y')" \
-		-n $(prgname) \
-		-c '$(title)' \
-		-r "$(version)" \
-		-q "\`'" > $(prgname).1
+		-n $(PRGNAME) \
+		-c '$(TITLE)' \
+		-r "$(VERSION)" \
+		-q "\`'" > $(PRGNAME).1
