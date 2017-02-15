@@ -21,8 +21,12 @@ install-man:
 clean-man:
 	rm $(mandir)/$(prgname).1
 
-pod:
+pod: README $(prgname).1
+
+README: $(prgname)
 	pod2text -q "\`'" $(prgname) > README
+
+$(prgname).1: $(prgname)
 	pod2man $(prgname) \
 		-d "$$(date +'%B %Y')" \
 		-n $(prgname) \
