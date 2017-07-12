@@ -212,7 +212,7 @@ use Getopt::Long;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.4.2';
+our $VERSION = '1.5.0';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -237,6 +237,16 @@ sub main
   my @tags        = get_tags();
   my @tabbed_tags = ();
 
+  if ($append_output) {
+    if (open(my $fh, '<', $output_file)) {
+      while (my $line = <$fh>) {
+        chomp($line);
+        push(@tabbed_tags, $line) unless $line =~ /^!/;
+      }
+      close($fh);
+    }
+  }
+
   push(@tabbed_tags,
     join("\t", '!_TAG_FILE_FORMAT', '2', '//'),
     join("\t", '!_TAG_FILE_SORTED', '2', '//'),
@@ -256,7 +266,7 @@ sub main
   @tabbed_tags = sort({ fc($a) cmp fc($b) } @tabbed_tags);
 
   if ($output_file ne '-') {
-    open(my $tags_fh, '>' . ('>' x $append_output), $output_file)
+    open(my $tags_fh, '>', $output_file)
       or croak("Failed to open tags: $!");
     print $tags_fh $_ . "\n" for @tabbed_tags;
     close($tags_fh);
