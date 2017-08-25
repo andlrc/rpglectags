@@ -212,7 +212,7 @@ use Getopt::Long;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.5.1';
+our $VERSION = '1.5.2';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -445,26 +445,29 @@ sub get_tags
 
       push(@tags, $tag);
 
-      # Don't try to find members if this DS is based on another DS
-      next if ($line =~ /\b(likeds)\b/xi);
-
-      # Slurp all lines from dcl-ds ... end-ds
-      while ($line !~ /\bend-ds\b/xi) {
-        # We should never iterate over another file. This also prevents infinite
-        # iteration with misformed data
-        last if eof;
-        $line .= <>;
-        $line =~ y/\r//d;
+      # Based upon another struct
+      if ($line =~ /\blikeds\( (.*?) \)/xi) {
+        $tagfields->{typeref} = $1;
       }
+      else {
+        # Slurp all lines from dcl-ds ... end-ds
+        while ($line !~ /\bend-ds\b/xi) {
+          # We should never iterate over another file. This also prevents infinite
+          # iteration with misformed data
+          last if eof;
+          $line .= <>;
+          $line =~ y/\r//d;
+        }
 
-      # Don't try to find members if this DS is based on an external database
-      # structure
-      next if ($line =~ /\b(extname)\b/xi);
+        # Don't try to find members if this DS is based on an external database
+        # structure
+        next if ($line =~ /\b(extname)\b/xi);
 
-      push(@tags, parse_free_dspi($address, $line, 'ds', {
-        "kind"   => "m",
-        "struct" => $name
-      }));
+        push(@tags, parse_free_dspi($address, $line, 'ds', {
+          "kind"   => "m",
+          "struct" => $name
+        }));
+      }
 
       next;
     }
