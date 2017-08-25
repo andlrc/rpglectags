@@ -212,7 +212,7 @@ use Getopt::Long;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.5.2';
+our $VERSION = '1.6.0';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -303,7 +303,8 @@ sub get_tags
         "tagaddress" => $address,
         "tagfields"  => {
           "kind" => "f"
-        }
+        },
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -332,7 +333,8 @@ sub get_tags
         "tagaddress" => $address,
         "tagfields"  => {
           "kind" => "f"
-        }
+        },
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -397,7 +399,8 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -419,7 +422,8 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -440,14 +444,15 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
 
       # Based upon another struct
       if ($line =~ /\blikeds\( (.*?) \)/xi) {
-        $tagfields->{typeref} = $1;
+        $tagfields->{typeref} = "struct:$1";
       }
       else {
         # Slurp all lines from dcl-ds ... end-ds
@@ -486,7 +491,8 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -522,7 +528,8 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -543,7 +550,8 @@ sub get_tags
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -580,7 +588,7 @@ sub convert_tag
     push(@tag, $key . ':' . $tagfields->{$key});
   }
 
-  push(@tag, "file:");
+  push(@tag, "file:") if $tag->{static};
 
   return join("\t", @tag);
 }
@@ -632,7 +640,8 @@ sub parse_free_dspi
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => "$parentAddress;$address",
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
@@ -665,7 +674,8 @@ sub parse_fixed_dspi
         "tagname"    => $name,
         "tagfile"    => $ARGV,
         "tagaddress" => "$parentAddress;$address",
-        "tagfields"  => $tagfields
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ /\.rpgleinc/xi
       };
 
       push(@tags, $tag);
