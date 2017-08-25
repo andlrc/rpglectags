@@ -212,7 +212,7 @@ use Getopt::Long;
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.5.0';
+our $VERSION = '1.5.1';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -289,7 +289,7 @@ sub get_tags
     if ($. == 1 || $line =~ /end-proc/xi || $line =~ /^\s{0,7}p[\w\s]{17}e\b/xi) {
       $currentProc        = undef;
       $currentProcAddress = undef;
-      next;
+      next unless $. == 1;
     }
 
     # Free 7.1 Procedure
