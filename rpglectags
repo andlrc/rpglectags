@@ -3,7 +3,7 @@
 
 =head1 NAME
 
-rpglectags - Creating ctags compatible files from RPG/ILE files
+rpglectags - Create tags files from ILE RPG source files.
 
 =head1 SYNOPSIS
 
@@ -35,18 +35,12 @@ One can uninstall by running:
 
 B<rpglectags> will create a ctags compatible file called `tags'.
 
-The B<rpglectags> program generate an index (or `tag') file for RPG/ILE objects
-found in file(s). This tag file allows these items to be quickly and easily
+The B<rpglectags> program generate an index (or `tag') file for objects found
+in ILE RPG file(s). This tag file allows these items to be quickly and easily
 located by a text editor or other utility. A `tag' signifies a language object
 for which an index entry is available.
 
-Tag index files are supported by a numerous editors, which allows the user to
-locate the objects associated with a name appearing in a source file and jump to
-the file and line which defines the name. Among other are:
-
-    Vi(1), Vim(1), Sublime Text, Visual Studio Code, Notepad++, ...
-
-At the moment there is support for:
+B<rpglectags> will create indices (or `tags') for the following:
 
 =over 4
 
@@ -212,7 +206,7 @@ use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.7.0';
+our $VERSION = '1.7.1';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -319,7 +313,7 @@ sub get_tags
     if ($line =~ /^\s{0,7}p(?=[\w\s]{17}b|\s*\w+\.\.\.)\s*\w+/xi) {
       my $address = create_address($line =~ s/(?<=\bb\b).*//xir);
 
-      # RPG/ILE fixed can be multiply lines if the line is ending in ...
+      # ILE RPG fixed can be multiply lines if the line is ending in ...
       if ($line =~ s/\.\.\.\s*$//xi) {
         $line .= <> =~ s/\s{0,7}p\b//xir;
         $line =~ y/\r//d;
@@ -368,7 +362,7 @@ sub get_tags
     # Fixed Pi
     if ($line =~ /^\s{0,7}d(?=[\w\s]{17}pi|\s*\w+\.\.\.)\s*\w+/xi) {
 
-      # RPG/ILE fixed can be multiply lines if the line is ending in ...
+      # ILE RPG fixed can be multiply lines if the line is ending in ...
       if ($line =~ s/\.\.\.\s*$//xi) {
         $line .= <> =~ s/(?<=\bpi\b).*//xir;
         $line =~ y/\r//d;

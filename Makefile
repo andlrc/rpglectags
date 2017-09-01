@@ -1,5 +1,5 @@
 PRGNAME=rpglectags
-TITLE=RPG/ILE Ctags
+TITLE=ILE RPG Ctags
 VERSION=$(shell ./$(PRGNAME) --version)
 
 DESTDIR=
