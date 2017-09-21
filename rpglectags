@@ -201,12 +201,11 @@ the same terms as Perl itself.
 
 use strict;
 use warnings;
-use v5.16;
 use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.7.1';
+our $VERSION = '1.7.2';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -257,7 +256,9 @@ sub main
     }
   }
 
-  @tabbed_tags = sort({ fc($a) cmp fc($b) } @tabbed_tags);
+  # FIXME: Currently we use "uc" instead of "fc" to sort "a" and "A" before
+  # an underscore ("_"). How can we use "fc" to archive this?
+  @tabbed_tags = sort({ uc($a) cmp uc($b) } @tabbed_tags);
 
   if ($output_file ne '-') {
     open(my $tags_fh, '>', $output_file)
