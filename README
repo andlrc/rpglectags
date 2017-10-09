@@ -55,7 +55,7 @@ DESCRIPTION
         Free format is supported though `dcl-ds'.
 
         Fixed format is supported though `dxxxxxxxxxxxxxxxxxds'. Continues
-        declarations is not supported. Up to 7 leading spaces will be
+        declarations is also supported. Up to 7 leading spaces will be
         supported.
 
     Stand alone and constant declarations

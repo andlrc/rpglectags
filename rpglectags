@@ -75,7 +75,7 @@ will be supported.
 Free format is supported though C<dcl-ds>.
 
 Fixed format is supported though C<dxxxxxxxxxxxxxxxxxds>. Continues declarations
-is not supported. Up to 7 leading spaces will be supported.
+is also supported. Up to 7 leading spaces will be supported.
 
 =item B<Stand alone and constant declarations>
 
@@ -205,7 +205,7 @@ use Getopt::Long qw{:config no_ignore_case gnu_compat bundling};
 use Carp;
 
 our $APP     = 'rpglectags';
-our $VERSION = '1.7.2';
+our $VERSION = '1.7.3';
 
 my $currentProc        = undef;
 my $currentProcAddress = undef;
@@ -281,14 +281,15 @@ sub get_tags
   while (my $line = <>) {
     $line =~ y/\r//d;
 
-    if ($. == 1 || $line =~ /end-proc/xi || $line =~ /^\s{0,7}p[\w\s]{17}e\b/xi) {
+    if ($. == 1 || $line =~ m{ end-proc }xmsi ||
+        $line =~ m{ ^ \s{0,7} p [\w\s]{17} \be\b }xmsi) {
       $currentProc        = undef;
       $currentProcAddress = undef;
       next unless $. == 1;
     }
 
     # Free 7.1 Procedure
-    if ($line =~ /(^\s*dcl-proc\s+(\w+).)/xi) {
+    if ($line =~ m{ ( ^ \s* dcl-proc \s+ ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1);
 
@@ -299,7 +300,7 @@ sub get_tags
         "tagfields"  => {
           "kind" => "f"
         },
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -310,42 +311,12 @@ sub get_tags
       next;
     }
 
-    # Fixed Procedure
-    if ($line =~ /^\s{0,7}p(?=[\w\s]{17}b|\s*\w+\.\.\.)\s*\w+/xi) {
-      my $address = create_address($line =~ s/(?<=\bb\b).*//xir);
-
-      # ILE RPG fixed can be multiply lines if the line is ending in ...
-      if ($line =~ s/\.\.\.\s*$//xi) {
-        $line .= <> =~ s/\s{0,7}p\b//xir;
-        $line =~ y/\r//d;
-      }
-
-      my ($procName) = $line =~ /\s{0,7}p\s+(\w+)/xi;
-
-      my $tag = {
-        "tagname"    => $procName,
-        "tagfile"    => $ARGV,
-        "tagaddress" => $address,
-        "tagfields"  => {
-          "kind" => "f"
-        },
-        "static"     => $ARGV !~ /\.rpgleinc/xi
-      };
-
-      push(@tags, $tag);
-
-      $currentProc        = $procName;
-      $currentProcAddress = $address;
-
-      next;
-    }
-
     # Free 7.1 Pi
-    if ($line =~ /(^\s*dcl-pi\b.)/xi) {
+    if ($line =~ m{ ( ^ \s* dcl-pi \b. ) }xmsi) {
       my $address = create_address($1, 1);
 
       # Slurp all lines from dcl-ds ... end-ds
-      while ($line !~ /\bend-pi\b/xi) {
+      while ($line !~ m{ \b end-pi \b }xmsi) {
         # We should never iterate over another file. This also prevents infinite
         # iteration with misformed data
         last if eof;
@@ -360,29 +331,8 @@ sub get_tags
       next;
     }
 
-    # Fixed Pi
-    if ($line =~ /^\s{0,7}d(?=[\w\s]{17}pi|\s*\w+\.\.\.)\s*\w+/xi) {
-
-      # ILE RPG fixed can be multiply lines if the line is ending in ...
-      if ($line =~ s/\.\.\.\s*$//xi) {
-        $line .= <> =~ s/(?<=\bpi\b).*//xir;
-        $line =~ y/\r//d;
-      }
-
-      my $address = create_address($line =~ s/(\bpi\b).*//xir, 1);
-
-      # Slurp all lines from d xxxxxx ... d xxxxxx
-      $line .= slurp_fixed_dspi();
-
-      push(@tags, parse_fixed_dspi($address, $line, 'pi', {
-        "kind" => "v"
-      }));
-
-      next;
-    }
-
     # Free subroutine declaraion (glorified goto)
-    if ($line =~ /(^\s*\bbegsr\s+(\w+).)/xi) {
+    if ($line =~ m{ ( ^ \s* \b begsr \s+ ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1, 1);
 
@@ -395,30 +345,7 @@ sub get_tags
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
-      };
-
-      push(@tags, $tag);
-
-      next;
-    }
-
-    # Fixed subroutine declaraion (glorified goto)
-    if ($line =~ /^\s{0,7}c[\w\s]{19}\bbegsr\b/) {
-
-      my ($name)  = $line =~ /\s{0,7}c\s*(\w+)/xi;
-      my $address = create_address($line =~ s/(?<=\bbegsr\b).*//xir, 1);
-
-      my $tagfields = {
-        "kind" => "f"
-      };
-
-      my $tag = {
-        "tagname"    => $name,
-        "tagfile"    => $ARGV,
-        "tagaddress" => $address,
-        "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -427,7 +354,7 @@ sub get_tags
     }
 
     # Free 7.1 DS
-    if ($line =~ /(^\s*\bdcl-ds\s+(\w+).)/xi) {
+    if ($line =~ m{ ( ^ \s* \b dcl-ds \s+ ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1, 1);
 
@@ -440,18 +367,18 @@ sub get_tags
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
 
       # Based upon another struct
-      if ($line =~ /\blikeds\( (.*?) \)/xi) {
+      if ($line =~ m{ \b likeds \( (.*?) \) }xmsi) {
         $tagfields->{typeref} = "struct:$1";
       }
       else {
         # Slurp all lines from dcl-ds ... end-ds
-        while ($line !~ /\bend-ds\b/xi) {
+        while ($line !~ m{ \b end-ds \b }xmsi) {
           # We should never iterate over another file. This also prevents infinite
           # iteration with misformed data
           last if eof;
@@ -461,7 +388,7 @@ sub get_tags
 
         # Don't try to find members if this DS is based on an external database
         # structure
-        next if ($line =~ /\b(extname)\b/xi);
+        next if ($line =~ m{ \b extname \b }xmsi);
 
         push(@tags, parse_free_dspi($address, $line, 'ds', {
           "kind"   => "m",
@@ -472,46 +399,8 @@ sub get_tags
       next;
     }
 
-    # Fixed DS
-    if ($line =~ /^\s{0,7}d[\w\s]{17}\bds\b/xi) {
-
-      my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
-      my $address = create_address($line =~ s/(?<=\bds).*//xir, 1);
-
-      my $tagfields = {
-        "kind" => "s"
-      };
-
-      my $tag = {
-        "tagname"    => $name,
-        "tagfile"    => $ARGV,
-        "tagaddress" => $address,
-        "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
-      };
-
-      push(@tags, $tag);
-
-      # Don't try to find members if this DS is based on another DS
-      next if ($line =~ /\b(likeds)\b/xi);
-
-      # Slurp all lines from d xxxxxx ... d xxxxxx
-      $line .= slurp_fixed_dspi();
-
-      # Don't try to find members if this DS is based on an external database
-      # structure
-      next if ($line =~ /\b(extname)\b/xi);
-
-      push(@tags, parse_fixed_dspi($address, $line, 'ds', {
-        "kind"   => "m",
-        "struct" => "$name"
-      }));
-
-      next;
-    }
-
     # Free 7.1 const and standalone
-    if ($line =~ /(^\s*\bdcl-[sc]\s+(\w+).)/xi) {
+    if ($line =~ m{ ( ^ \s* \b dcl-[sc] \s+ ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1, 1);
 
@@ -524,7 +413,7 @@ sub get_tags
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -532,10 +421,69 @@ sub get_tags
       next;
     }
 
+    # Multi line fixed proc
+    if ($line =~ m{ ^ \s{0,7} p \s* \w+ \.\.\. \s* $ }xmsi) {
+      push(@tags, fixed_proc($line));
+      next;
+    }
+
+    # Multi line fixed pi, ds, or pr
+    if ($line =~ m{ ^ \s{0,7} d \s* \w+ \.\.\. \s* $ }xmsi) {
+      my $tmp = <>;
+      if ($tmp =~ m{ \b pi \b }xmsi) {
+        push(@tags, fixed_pi($line));
+      }
+      elsif ($tmp =~ m{ \b ds \b }xmsi) {
+        push(@tags, fixed_ds($line));
+      }
+      next;
+    }
+
+    # Fixed Procedure
+    if ($line =~ m{ ^ \s{0,7} p [\w\s]{17} \b b \b }xmsi) {
+      push(@tags, fixed_proc($line));
+      next;
+    }
+
+    # Fixed Pi
+    if ($line =~ m{ ^ \s{0,7} d [\w\s]{17} pi }xmsi) {
+      push(@tags, fixed_pi($line));
+      next;
+    }
+
+    # Fixed subroutine declaraion (glorified goto)
+    if ($line =~ m{ ^ \s{0,7} c [\w\s]{19} \b begsr\b }xmsi) {
+
+      my ($name)  = $line =~ m{ \s{0,7} c \s* (\w+) }xmsi;
+      my $address = create_address($line =~ s{ (?<= \b begsr \b ) .* }{}xmsir, 1);
+
+      my $tagfields = {
+        "kind" => "f"
+      };
+
+      my $tag = {
+        "tagname"    => $name,
+        "tagfile"    => $ARGV,
+        "tagaddress" => $address,
+        "tagfields"  => $tagfields,
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
+      };
+
+      push(@tags, $tag);
+
+      next;
+    }
+
+    # Fixed DS
+    if ($line =~ m{ ^ \s{0,7} d [\w\s]{17} \b ds \b }xmsi) {
+      push (@tags, fixed_ds($line));
+      next;
+    }
+
     # Fixed const and standalone
-    if ($line =~ /^\s{0,7}d[\w\s]{17}\b[sc]\b/xi) {
-      my ($name)  = $line =~ /^\s{0,7}d\s*(\w+)/xi;
-      my $address = create_address($line =~ s/(?<=\b[sc]\b).*//xir, 1);
+    if ($line =~ m{ ^ \s{0,7} d [\w\s]{17} \b [sc] \b }xmsi) {
+      my ($name)  = $line =~ m{ ^ \s{0,7} d \s* ( \w+ ) }xmsi;
+      my $address = create_address($line =~ s{ (?<= \b [sc] \b ) .*}{}xmsir, 1);
 
       my $tagfields = {
         "kind" => "v"
@@ -546,7 +494,7 @@ sub get_tags
         "tagfile"    => $ARGV,
         "tagaddress" => $address,
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -560,6 +508,89 @@ sub get_tags
 
   return @tags;
 }
+
+sub fixed_proc
+{
+  my ($line) = @_;
+  my $address = create_address($line =~ s{ (?<= \b b \b ) .*}{}xmsir);
+
+  # ILE RPG fixed can be multiply lines if the line is ending in ...
+  if ($line =~ s{ \.\.\. \s* $ }{}xmsi) {
+    $line .= <> =~ s{ \s{0,7} p \b }{}xmsir;
+    $line =~ y/\r//d;
+  }
+
+  my ($procName) = $line =~ m{ \s{0,7} p \s+ ( \w+ ) }xmsi;
+
+  my $tag = {
+    "tagname"    => $procName,
+    "tagfile"    => $ARGV,
+    "tagaddress" => $address,
+    "tagfields"  => {
+      "kind" => "f"
+    },
+    "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
+  };
+
+  $currentProc        = $procName;
+  $currentProcAddress = $address;
+
+  return $tag;
+}
+sub fixed_pi
+{
+  my ($line) = @_;
+
+  my $address = create_address($line =~ s{ ( \b pi \b ) .* }{}xmsir, 1);
+
+  # Slurp all lines from d xxxxxx ... d xxxxxx
+  $line .= slurp_fixed_dspi();
+
+  return parse_fixed_dspi($address, $line, 'pi', {
+    "kind" => "v"
+  });
+
+}
+sub fixed_ds
+{
+  my ($line) = @_;
+  my @tags;
+
+  my ($name)  = $line =~ m{ ^ \s{0,7} d \s* ( \w+ ) }xmsi;
+  my $address = create_address($line =~ s{ (?<= \b ds ) .* }{}xmsir, 1);
+
+  my $tagfields = {
+    "kind" => "s"
+  };
+
+  my $tag = {
+    "tagname"    => $name,
+    "tagfile"    => $ARGV,
+    "tagaddress" => $address,
+    "tagfields"  => $tagfields,
+    "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
+  };
+
+  push(@tags, $tag);
+
+  # Don't try to find members if this DS is based on another DS
+  return @tags if ($line =~ m{ \b likeds \b }xmsi);
+
+  # Slurp all lines from d xxxxxx ... d xxxxxx
+  $line .= slurp_fixed_dspi();
+
+  # Don't try to find members if this DS is based on an external database
+  # structure
+  return @tags if ($line =~ m{ \b extname \b }xmsi);
+
+  push(@tags, parse_fixed_dspi($address, $line, 'ds', {
+    "kind"   => "m",
+    "struct" => "$name"
+  }));
+
+  return @tags;
+}
+
 # Contains a tag hash to a <TAB> separated line
 sub convert_tag
 {
@@ -603,9 +634,9 @@ sub slurp_fixed_dspi
 
     # Empty lines doesn't mean the ds/pi stops, but doesn't contain any useful
     # information either, just skip them.
-    next if $next_line =~ /^\s*$/;
+    next if $next_line =~ m{ ^ \s* $ }xmsi;
 
-    if ($next_line !~ /^\s{0,7}d(?=[\w\s]{17}\W)\s*\w+/xi) {
+    if ($next_line !~ m{ ^ \s{0,7} d (?= [\w\s]{17} \W ) \s* \w+ }xmsi) {
       seek(ARGV, $pos, 0);
       last;
     }
@@ -625,9 +656,9 @@ sub parse_free_dspi
   my @tags = ();
 
   foreach (split("\n", $line)) {
-    next if /\bdcl-$type\b|\bend-$type\b/xi;
+    next if m{ \b dcl-$type \b | \bend-$type \b }xmsi;
 
-    if (/(^\s*(\w+).)/) {
+    if (m{ ( ^ \s* ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1);
 
@@ -636,7 +667,7 @@ sub parse_free_dspi
         "tagfile"    => $ARGV,
         "tagaddress" => "$parentAddress;$address",
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -659,9 +690,9 @@ sub parse_fixed_dspi
     # d field1                       256    varying
     # d                                4    varying
     # d field2                       256    varying
-    next if /^\s{0,7}d(\s{17}|[\w\s]{17}$type)/xi;
+    next if m{ ^ \s{0,7} d ( \s{17} | [\w\s]{17} $type ) }xmsi;
 
-    if (/(\s{0,7}d\s*(\w+).)/xi) {
+    if (m{ ( \s{0,7} d \s* ( \w+ ) . ) }xmsi) {
       my $name    = $2;
       my $address = create_address($1);
 
@@ -670,7 +701,7 @@ sub parse_fixed_dspi
         "tagfile"    => $ARGV,
         "tagaddress" => "$parentAddress;$address",
         "tagfields"  => $tagfields,
-        "static"     => $ARGV !~ /\.rpgleinc/xi
+        "static"     => $ARGV !~ m{ \.rpgleinc $ }xmsi
       };
 
       push(@tags, $tag);
@@ -687,7 +718,7 @@ sub create_address
   my ($address, $addProc) = @_;
 
   $address =~ y/\n//d;
-  $address =~ s/[\^\/\$]/\\$&/g; # Escape '^', '$' and '/'
+  $address =~ s{ [\^/\$] }{\\$&}g; # Escape '^', '$' and '/'
   $address = "/^$address/";
 
   $address = "$currentProcAddress;$address" if $addProc && $currentProcAddress;

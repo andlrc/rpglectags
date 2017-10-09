@@ -1,36 +1,22 @@
-PRGNAME=rpglectags
-TITLE=ILE RPG Ctags
-VERSION=$(shell ./$(PRGNAME) --version)
+.PHONY:	all uninstall install
+all:	rpglectags.1 README
 
-DESTDIR=
-CMDDIR=$(DESTDIR)/usr/bin
-MANDIR=$(DESTDIR)/usr/share/man/man1
+README: rpglectags
+	pod2text -q "\`'" $< > $@
 
-install: install-man install-cmd
-
-clean: clean-man clean-cmd
-
-install-cmd:
-	cp $(PRGNAME) $(CMDDIR)/$(PRGNAME)
-
-clean-cmd:
-	rm $(CMDDIR)/$(PRGNAME)
-
-install-man: $(PRGNAME).1
-	cp $(PRGNAME).1 $(MANDIR)/$(PRGNAME).1
-
-clean-man:
-	rm $(MANDIR)/$(PRGNAME).1
-
-pod: README $(PRGNAME).1
-
-README: $(PRGNAME)
-	pod2text -q "\`'" $(PRGNAME) > README
-
-$(PRGNAME).1: $(PRGNAME)
-	pod2man $(PRGNAME) \
+rpglectags.1: rpglectags
+	pod2man $< \
 		-d "$$(date +'%B %Y')" \
-		-n $(PRGNAME) \
-		-c '$(TITLE)' \
-		-r "$(VERSION)" \
-		-q "\`'" > $(PRGNAME).1
+		-n $< \
+		-c 'ILE RPG Ctags' \
+		-r "$(shell ./rpglectags --version)" \
+		-q "\`'" > $@
+
+install:	rpglectags rpglectags.1
+	cp rpglectags /usr/bin/rpglectags
+	cp rpglectags.1 /usr/share/man/man1/rpglectags.1
+
+uninstall:
+	rm /usr/bin/rpglectags
+	rm /usr/share/man/man1/rpglectags.1
+
