@@ -1,16 +1,8 @@
 .PHONY:	all uninstall install
 all:	rpglectags.1 README
 
-README: rpglectags
-	pod2text -q "\`'" $< > $@
-
-rpglectags.1: rpglectags
-	pod2man $< \
-		-d "$$(date +'%B %Y')" \
-		-n $< \
-		-c 'ILE RPG Ctags' \
-		-r "$(shell ./rpglectags --version)" \
-		-q "\`'" > $@
+README: rpglectags.1
+	LC_ALL=C MANWIDTH=80 man -l $< > $@
 
 install:	rpglectags rpglectags.1
 	cp rpglectags /usr/bin/rpglectags

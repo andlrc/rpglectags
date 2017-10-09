@@ -1,138 +1,159 @@
+RPGLECTAGS(1)               General Commands Manual              RPGLECTAGS(1)
+
 NAME
-    rpglectags - Create tags files from ILE RPG source files.
+       rpglectags - Create tags files from ILE RPG source files.
 
 SYNOPSIS
-    rpglectags [-f output | -o output] [-a] [--help] [--version] [files]...
-
-INSTALL
-    First clone this repository, and then run:
-
-        sudo make install
-
-    This will install two files: `/usr/bin/rpglectags' and
-    `/usr/share/man/man1/rpglectags.1'.
-
-    One can uninstall by running:
-
-        sudo make clean
+       rpglectags [OPTIONS]... FILE...
 
 DESCRIPTION
-    rpglectags will create a ctags compatible file called `tags'.
+       rpglectags will create a ctags compatible file called tags.
 
-    The rpglectags program generate an index (or `tag') file for objects
-    found in ILE RPG file(s). This tag file allows these items to be quickly
-    and easily located by a text editor or other utility. A `tag' signifies
-    a language object for which an index entry is available.
+       The  rpglectags  program  generate  an  index (or tag) file for objects
+       found in ILE RPG file(s).  This tag  file  allows  these  items  to  be
+       quickly  and  easily  located  by a text editor or other utility. A tag
+       signifies a language object for which an index entry is available.
 
-    rpglectags will create indices (or `tags') for the following:
+       rpglectags will create indices (or tags) for the following:
 
-    Procedures
-        Free format is supported though `dcl-proc'.
+       Procedures
+              Free format is supported though:
+                     dcl-proc procName;
 
-        Fixed format is supported though `pxxxxxxxxxxxxxxxxxb'. Continues
-        procedure names is also supported, i.e.
-        `pxxxxxx...\np_________________b'. Where `\n' is a literal newline
-        and `_' is a literal space. Up to 7 leading spaces will be
-        supported.
+              Fixed format is supported though:
+                     p procName        b
 
-    Subroutines
-        Free format is supported though `begsr'.
+              Continues procedures are also supported, i.e.
+                     p longProdecureName...
+                     p                 b
 
-        Fixed format is supported though `cxxxxxxxxxxxxxxxxxxxbegsr'.
-        Continues declarations is not supported. Up to 7 leading spaces will
-        be supported.
+              Up to 7 leading spaces will be supported.
 
-    Procedure interface
-        Free format is supported though `dcl-pi'.
+       Subroutines
+              Free format is supported though:
+                     begsr subName;
 
-        Fixed format is supported though `dxxxxxxxxxxxxxxxxxpi'. Continues
-        procedure interfaces is also supported, i.e.
-        `dxxxxxx...\nd_________________pi'. Where `\n' is a literal newline
-        and `_' is a literal space. Up to 7 leading spaces will be
-        supported.
+              Fixed format is supported though:
+                     c subName           begsr
 
-    Data structures
-        Free format is supported though `dcl-ds'.
+              Up to 7 leading spaces will be supported.
 
-        Fixed format is supported though `dxxxxxxxxxxxxxxxxxds'. Continues
-        declarations is also supported. Up to 7 leading spaces will be
-        supported.
+       Procedure interface
+              Free format is supported though:
+                     dcl-pi piName;
+                       parm1;
+                       parm2;
+                     end-pi;
 
-    Stand alone and constant declarations
-        Free format is supported though `dcl-s' and `dcl-c'.
+              Fixed format is supported though:
+                     d piName          pi
+                     d parm1
+                     d parm2
 
-        Fixed format is supported though `dxxxxxxxxxxxxxxxxxs' and
-        `dxxxxxxxxxxxxxxxxxc'. Continues declarations is not supported. Up
-        to 7 leading spaces will be supported.
+              Continues procedure interfaces are also supported, i.e.
+                     d veryVeryLongPiName...
+                     p                 pi
+                     p parm1
+                     p parm2
+
+              Up to 7 leading spaces will be supported.
+
+       Data structures
+              Free format is supported though:
+                     dcl-ds dsName;
+                       mbr1;
+                       mbr2;
+                     end-ds;
+
+              Fixed format is supported though:
+                     d dsName          ds
+                     d mbr1
+                     d mbr2
+
+              Continues data structures are also supported, i.e.
+                     d veryVeryLongDsName...
+                     p                 ds
+                     p mbr1
+                     p mbr2
+
+              Up to 7 leading spaces will be supported.
+
+       Standalone and constant declaraions
+              Free format is supported though:
+                     dcl-s varName;
+                     dcl-c constName;
+
+              Fixed format is supported though:
+                     d varName         s
+                     d constName       c
 
 OPTIONS
-    -f *file* | -o *file*
-        Write tags til specified file. Value of `-' writes tags to stdout.
-        Default is `tags'
+       -f file | -o file
+              write tags til specified file.  Value of - writes tags  to  std-
+              out.  Default is tags.
 
-    -a  Append the tags to an existing tag file
+       -a     append the tags to an existing tag file
 
-    -h, --help
-        Print a summary of options and exit.
+       -h, --help
+              print a summary of options and exit.
 
-    --version
-        Print version information on standard output then exit successfully.
+       --version
+              print  version information on standard output then exit success-
+              fully.
 
 EXAMPLES
-    To create tags from the file `test.rpgle', you'd use
+       To create tags from the file test.rpgle, you'd use:
+              rpglectags test.rpgle
 
-        rpglectags test.rpgle
+       To create tags from all rpgle and sqlrpgle files recursively, you might
+       say
+              find . -type f \( -name '*.rpgle' -o -name '*.sqlrpgle' \) \
+                     -exec rpglectags {} +
 
-    To create tags from all rpgle and sqlrpgle files recursively, you might
-    say
-
-        find . -type f \( -name '*.rpgle' -o -name '*.sqlrpgle' \) \
-          -exec rpglectags {} +
-
-    More examples:
-
-        rpglectags -f - test2.rpgle        # Print tags to stdout
-        rpglectags -a test2.rpgle          # Append tags to the 'tags' file
+       More examples:
+              rpglectags -f - test2.rpgle        # Print tags to stdout
+              rpglectags  -a  test2.rpgle          # Append tags to the 'tags'
+              file
 
 TAG FILE FORMAT
-    Each entry in the tag file consists of a separate line, each looking
-    like this in the most general case:
+       Each entry in the tag file consists of a separate  line,  each  looking
+       like this in the most general case:
+              {tagname}<TAB>{tagfile}<TAB>{tagaddress};"<TAB>{tagfields}
 
-        {tagname}<TAB>{tagfile}<TAB>{tagaddress};"<TAB>{tagfields}
+       The fields and separators of these lines are specified as follows:
 
-    The fields and separators of these lines are specified as follows:
+       1.     tag name
 
-    1.  Tag name
+       2.     single tab character
 
-    2.  Single tab character
+       3.     name  of the file in which the object associated with the tag is
+              located
 
-    3.  Name of the file in which the object associated with the tag is
-        located
+       4.     single tab character
 
-    4.  Single tab character
+       5.     tag address. A non magic pattern enclosed in / or ?  or  a  line
+              number.
 
-    5.  Tag address. A non magic pattern enclosed in / or ? or a line
-        number.
+       6.     a constant ;" for backward compatibility with vi(1)
 
-    6.  A constant `;"' for backward compatibility with vi(1)
-
-    7.  Extra fields narrowing down the type of tag entry, i.e. kind:{fvms},
-        struct:nameOfStruct
+       7.     extra  fields  narrowing  down  the  type  of  tag  entry,  i.e.
+              kind:{fvms}, struct:nameOfStruct
 
 EXIT STATUS
-    The following exit values shall be returned:
+       The following exit values shall be returned:
 
-    0   Successful completion.
+       0      successful completion.
 
-    1   Error parsing command-line argument.
+       1      error parsing command-line argument.
 
 SEE ALSO
-    ctags(1)
+       ctags(1)
 
 AUTHOR
-    Andreas Louv <andreas@louv.dk>.
+       Andreas Louv <andreas@louv.dk>.
 
 LICENSE
-    This program is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself.
+       This program is free software; you can redistribute it and/or modify it
+       under the same terms as Perl itself.
 
+                                  2017 Oct 9                     RPGLECTAGS(1)
